@@ -78,7 +78,7 @@ def get_annotations(image_path,
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--model_path', type=str, default='../sam_vit_h_4b8939.pth', help='sam checkpoint path')
+    parser.add_argument('--model_path', type=str, default='../sam_vit_h_4b8939.pth', help='sam checkpoint path wget https://dl.fbaipublicfiles.com/segment_anything/sam_vit_h_4b8939.pth')
     parser.add_argument('--repo_path', type=str, default='/home/azon/detect/Grounded-Segment-Anything/', help='path that contain GroundingDINO module')
     parser.add_argument('--image_root_path', type=str, default='/home/azon/data/video/', help='path all images')
     parser.add_argument('--output_path', type=str, default='./objects.json', help='path to save annotations')
