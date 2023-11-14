@@ -78,12 +78,9 @@ def get_annotations(image_path,
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--repo_path', type=str, default='/home/azon/detect/Grounded-Segment-Anything/', help='path that contain GroundingDINO module')
     parser.add_argument('--image_root_path', type=str, default='/home/azon/data/video/', help='path all images')
     parser.add_argument('--output_path', type=str, default='./objects.json', help='path to save annotations')
     args = parser.parse_args()
-
-    sys.path.append(args.repo_path)
 
     # Use this command for evaluate the Grounding DINO model
     # Or you can download the model by yourself
