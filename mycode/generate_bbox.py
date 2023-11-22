@@ -92,7 +92,8 @@ if __name__ == '__main__':
     text_prompt = "person,broom,picture,closet/cabinet,blanket,window,table,paper/notebook,refrigerator,pillow,cup/glass/bottle,shelf,shoe,medicine,phone/camera,box,sandwich,book,bed,clothes,mirror,sofa/couch,floor,bag,dish,laptop,door,towel,food,chair,doorknob,doorway,groceries,hands,light,vacuum,television"
 
     res = defaultdict(list)
-    pbar = tqdm(os.walk(args.image_root_path))
+    dlength = len(os.listdir(args.image_root_path))
+    pbar = tqdm(os.walk(args.image_root_path), total=dlength, leave=True)
     for root, dirs, files in pbar:
         for name in tqdm(files, leave=False):
             image_path = os.path.join(root, name)
