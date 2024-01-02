@@ -135,3 +135,4 @@ outputs/
 .idea/
 mycode/objects.json
 objects.json
+mycode/old_objects.json
