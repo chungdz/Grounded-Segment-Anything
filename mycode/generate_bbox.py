@@ -92,7 +92,7 @@ if __name__ == '__main__':
     # text_prompt = "person,broom,picture,closet/cabinet,blanket,window,table,paper/notebook,refrigerator,pillow,cup/glass/bottle,shelf,shoe,medicine,phone/camera,box,sandwich,book,bed,clothes,mirror,sofa/couch,floor,bag,dish,laptop,door,towel,food,chair,doorknob,doorway,groceries,hands,light,vacuum,television"
     text_prompt = "person,broom,picture,closet,cabinet,blanket,window,table,paper,notebook,refrigerator,pillow,cup,glass,bottle,shelf,shoe,medicine,phone,camera,box,sandwich,book,bed,clothes,mirror,sofa,couch,floor,bag,dish,laptop,door,towel,food,chair,doorknob,doorway,groceries,hands,light,vacuum,television"
 
-    res = defaultdict(list)
+    res = defaultdict(dict)
     dlength = len(os.listdir(args.image_root_path))
     pbar = tqdm(os.walk(args.image_root_path), total=dlength, leave=True)
     for root, dirs, files in pbar:
@@ -102,10 +102,9 @@ if __name__ == '__main__':
             annotations = get_annotations(image_path, text_prompt, groundingdino_model)
             video_id = image_path.split('/')[-2].split('.')[-2]
             frame_id = image_path.split('/')[-1].split('.')[-2]
-            res[video_id].append({
-                'frame_id': frame_id,
+            res[video_id][frame_id] = {
                 'boxes': annotations['boxes'],
                 'labels': annotations['labels']
-            })
+            }
     
     json.dump(res, open(args.output_path, 'w'))
