@@ -27,7 +27,9 @@ for dname in dlist:
         vkey = ann['video_id']
         for frame_id, graph in ann['situations'].items():
             bbox = graph['bbox']
-            bbox_labels = graph['bbox_labels']
+            bbox_labels = []
+            for o in graph['bbox_labels']:
+                bbox_labels.append(vocab[o])
 
             rel_pairs = []
             for r1, r2 in graph['rel_pairs']:
