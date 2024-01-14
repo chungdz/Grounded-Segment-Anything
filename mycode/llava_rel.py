@@ -26,8 +26,8 @@ if __name__ == '__main__':
     parser.add_argument('--output_path', type=str, default='llava.json', help='path to save annotations')
     args = parser.parse_args()
 
-    model = LlavaForConditionalGeneration.from_pretrained("llava-hf/llava-1.5-13b-hf")
-    processor = AutoProcessor.from_pretrained("llava-hf/llava-1.5-13b-hf")
+    model = LlavaForConditionalGeneration.from_pretrained("llava-hf/llava-1.5-7b-hf")
+    processor = AutoProcessor.from_pretrained("llava-hf/llava-1.5-7b-hf")
     model.to(0)
 
     # Use this command for evaluate the Grounding DINO model
@@ -61,3 +61,6 @@ if __name__ == '__main__':
 
     
     json.dump(objects, open(args.output_path, 'w'))
+
+# export HUGGINGFACE_HUB_CACHE=/nobackup/users/bowu/model/transformers_cache/
+# python llava_rel.py --image_root_path=/nobackup/users/bowu/data/STAR/Raw_Videos_Frames/Charades_v1_480/ --image_info_path=/nobackup/users/bowu/data/STAR/Raw_Videos_Frames/objects.json --output_path=/nobackup/users/bowu/data/STAR/Raw_Videos_Frames/llava.json
