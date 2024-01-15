@@ -27,9 +27,8 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     print('load model')
-    model = LlavaForConditionalGeneration.from_pretrained("llava-hf/llava-1.5-7b-hf")
-    processor = AutoProcessor.from_pretrained("llava-hf/llava-1.5-7b-hf")
-    model.to(0)
+    model = LlavaForConditionalGeneration.from_pretrained("llava-hf/llava-1.5-13b-hf", device_map="auto")
+    processor = AutoProcessor.from_pretrained("llava-hf/llava-1.5-13b-hf")
 
     # Use this command for evaluate the Grounding DINO model
     # Or you can download the model by yourself
