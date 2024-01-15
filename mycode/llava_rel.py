@@ -16,8 +16,6 @@ from transformers import AutoProcessor, LlavaForConditionalGeneration
 
 all_obj = set("person,broom,picture,closet,cabinet,blanket,window,table,paper,notebook,refrigerator,pillow,cup,glass,bottle,shelf,shoe,medicine,phone,camera,box,sandwich,book,bed,clothes,mirror,sofa,couch,floor,bag,dish,laptop,door,towel,food,chair,doorknob,doorway,groceries,hands,light,vacuum,television".split(','))
 
-# os.environ['TRANSFORMERS_CACHE'] = '/nobackup/users/bowu/model/transformers_cache'
-
 parser = argparse.ArgumentParser()
 parser.add_argument('--image_root_path', type=str, default='/nobackup/users/bowu/data/STAR/Raw_Videos_Frames/Charades_v1_480/', help='path all images')
 parser.add_argument('--image_info_path', type=str, default='/nobackup/users/bowu/data/STAR/Raw_Videos_Frames/objects.json', help='path all images')
@@ -84,10 +82,8 @@ for _ in pbar:
         resf.write(json.dumps([video_id, frame_id, return_text]) + '\n')
 
     resf.flush()
-    if _ == 20:
-        break
 
 resf.close()
 
 # export HUGGINGFACE_HUB_CACHE=/nobackup/users/bowu/model/transformers_cache/
-# python llava_rel.py --rank=0 --image_root_path=/nobackup/users/bowu/data/STAR/Raw_Videos_Frames/Charades_v1_480/ --image_info_path=/nobackup/users/bowu/data/STAR/Raw_Videos_Frames/objects.json --output_path=/nobackup/users/bowu/data/STAR/Raw_Videos_Frames/llava.txt
+# python llava_rel.py --rank=0 --image_root_path=/nobackup/users/bowu/data/STAR/Raw_Videos_Frames/Charades_v1_480/ --image_info_path=/nobackup/users/bowu/data/STAR/Raw_Videos_Frames/objects.json --output_path=/nobackup/users/bowu/data/STAR/Raw_Videos_Frames/llava_
