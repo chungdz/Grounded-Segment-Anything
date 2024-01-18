@@ -37,8 +37,8 @@ CUDA_VISIBLE_DEVICES=2 python llava_rel.py --rank=10 --sindex=0  (llavasub10) tm
 CUDA_VISIBLE_DEVICES=3 python llava_rel.py --rank=11 --sindex=0  (llavasub30) tmux attach -t llavasub3 
 
 ssh -X node0007
-CUDA_VISIBLE_DEVICES=0 python llava_rel.py --rank=12 --sindex=0 (llava-7) tmux attach -t llava-7 
-CUDA_VISIBLE_DEVICES=1 python llava_rel.py --rank=13 --sindex=0  (llavasub5) tmux attach -t llavasub5 
-CUDA_VISIBLE_DEVICES=2 python llava_rel.py --rank=14 --sindex=0  (llavasub10) tmux attach -t llavasub1 
-CUDA_VISIBLE_DEVICES=3 python llava_rel.py --rank=15 --sindex=0  (llavasub30) tmux attach -t llavasub3 
+CUDA_VISIBLE_DEVICES=0 python llava_rel.py --rank=12 --sindex=0 (llava-7) tmux attach -t llavasub2
+CUDA_VISIBLE_DEVICES=1 python llava_rel.py --rank=13 --sindex=0  (llavasub5) tmux attach -t llava4-26
+CUDA_VISIBLE_DEVICES=2 python llava_rel.py --rank=14 --sindex=0  (llavasub10) tmux attach -t llava6-27
+CUDA_VISIBLE_DEVICES=3 python llava_rel.py --rank=15 --sindex=0  (llavasub30) tmux attach -t llavasub7
 
