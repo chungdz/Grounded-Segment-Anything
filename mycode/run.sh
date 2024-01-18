@@ -42,3 +42,26 @@ CUDA_VISIBLE_DEVICES=1 python llava_rel.py --rank=13 --sindex=0  (llavasub5) tmu
 CUDA_VISIBLE_DEVICES=2 python llava_rel.py --rank=14 --sindex=0  (llavasub10) tmux attach -t llava6-27
 CUDA_VISIBLE_DEVICES=3 python llava_rel.py --rank=15 --sindex=0  (llavasub30) tmux attach -t llavasub7
 
+
+CUDA_VISIBLE_DEVICES=0 python llama_rel.py --rank=0 --sindex=0 (llava-7) tmux attach -t llava-7 
+CUDA_VISIBLE_DEVICES=1 python llama_rel.py --rank=1 --sindex=0  (llavasub5) tmux attach -t llavasub5 
+CUDA_VISIBLE_DEVICES=2 python llama_rel.py --rank=2 --sindex=0  (llavasub10) tmux attach -t llavasub1 
+CUDA_VISIBLE_DEVICES=3 python llama_rel.py --rank=3 --sindex=0  (llavasub30) tmux attach -t llavasub3 
+
+
+CUDA_VISIBLE_DEVICES=0 python llama_rel.py --rank=4 --sindex=0 (llavasub20) tmux attach -t llavasub2 
+CUDA_VISIBLE_DEVICES=1 python llama_rel.py --rank=5 --sindex=0 (llava4-260) tmux attach -t llava4-26 
+CUDA_VISIBLE_DEVICES=2 python llama_rel.py --rank=6 --sindex=0 (llava6-270) tmux attach -t llava6-27 
+CUDA_VISIBLE_DEVICES=3 python llama_rel.py --rank=7 --sindex=0 (llavasub70) tmux attach -t llavasub7
+
+
+CUDA_VISIBLE_DEVICES=0 python llama_rel.py --rank=8 --sindex=0 (llava-7) tmux attach -t llava-7 
+CUDA_VISIBLE_DEVICES=1 python llama_rel.py --rank=9 --sindex=0  (llavasub5) tmux attach -t llavasub5 
+CUDA_VISIBLE_DEVICES=2 python llama_rel.py --rank=10 --sindex=0  (llavasub10) tmux attach -t llavasub1 
+CUDA_VISIBLE_DEVICES=3 python llama_rel.py --rank=11 --sindex=0  (llavasub30) tmux attach -t llavasub3 
+
+
+CUDA_VISIBLE_DEVICES=0 python llama_rel.py --rank=12 --sindex=0 (llava-7) tmux attach -t llavasub2
+CUDA_VISIBLE_DEVICES=1 python llama_rel.py --rank=13 --sindex=0  (llavasub5) tmux attach -t llava4-26
+CUDA_VISIBLE_DEVICES=2 python llama_rel.py --rank=14 --sindex=0  (llavasub10) tmux attach -t llava6-27
+CUDA_VISIBLE_DEVICES=3 python llama_rel.py --rank=15 --sindex=0  (llavasub30) tmux attach -t llavasub7

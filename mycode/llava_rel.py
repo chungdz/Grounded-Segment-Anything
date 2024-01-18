@@ -19,7 +19,7 @@ all_obj = set("person,broom,picture,closet,cabinet,blanket,window,table,paper,no
 parser = argparse.ArgumentParser()
 parser.add_argument('--image_root_path', type=str, default='/nobackup/users/bowu/data/STAR/Raw_Videos_Frames/Charades_v1_480/', help='path all images')
 parser.add_argument('--image_info_path', type=str, default='/nobackup/users/bowu/data/STAR/Raw_Videos_Frames/objects.json', help='path all images')
-parser.add_argument('--output_path', type=str, default='/nobackup/users/bowu/data/STAR/Raw_Videos_Frames/llava_', help='path to save annotations')
+parser.add_argument('--output_path', type=str, default='/nobackup/users/bowu/data/STAR/Raw_Videos_Frames/llava_result/llava_', help='path to save annotations')
 parser.add_argument('--batch_size', type=int, default=1)
 parser.add_argument('--process_num', type=int, default=16)
 parser.add_argument('--rank', type=int, default=2)
