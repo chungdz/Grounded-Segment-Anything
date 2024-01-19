@@ -10,6 +10,7 @@ import torch
 from PIL import Image, ImageDraw, ImageFont
 
 import numpy as np
+import math
 
 from PIL import Image
 from transformers import LlamaTokenizer, LlamaForCausalLM
@@ -41,7 +42,9 @@ Now, generate tuples of relation for me with this input text:
 parser = argparse.ArgumentParser()
 parser.add_argument('--frame_info_path', type=str, default='/nobackup/users/bowu/data/STAR/Raw_Videos_Frames/llava_result/llava_', help='path all images')
 parser.add_argument('--output_path', type=str, default='/nobackup/users/bowu/data/STAR/Raw_Videos_Frames/llama_result/llama_', help='path to save annotations')
-parser.add_argument('--rank', type=int, default=2)
+parser.add_argument('--rank', type=int, default=3)
+parser.add_argument('--sindex', type=int, default=0)
+parser.add_argument('--batch_size', type=int, default=2)
 args = parser.parse_args()
 
 tokenizer = LlamaTokenizer.from_pretrained("meta-llama/Llama-2-7b-chat-hf")
@@ -51,44 +54,58 @@ model = LlamaForCausalLM.from_pretrained("meta-llama/Llama-2-7b-chat-hf", device
 print('load data')
 with open(args.frame_info_path + str(args.rank) + '.txt', 'r') as f:
     all_frames = f.readlines()
-print('load previous results')
-respath = args.output_path + str(args.rank) + '.txt'
-if os.path.exists(respath):
-    with open(respath, 'r') as f:
-        res = f.readlines()
-    resf = open(respath, 'w')
-    print('previous results length', len(res), 'drop last line and start from there')
-    # avoid broken line at the end
-    for line in res[:-1]:
-        resf.write(line)
-    sindex = len(res) - 1
-else:
-    print('previous results not exist, start from 0')
-    sindex = 0
-    resf = open(respath, 'w')
+resf = open(args.output_path + str(args.rank) + '.txt', 'a')
 
 flen = len(all_frames)
-for findex in trange(sindex, flen):
+
+for findex in trange(args.sindex, math.ceil(flen / args.batch_size)):
     
-    line = all_frames[findex]
-    video_id, frame_id, desc_text = json.loads(line)
-    desc_index = desc_text.index(("ASSISTANT"))
-    desc = desc_text[desc_index + 11:]
-    prompt = p1 + '"{}"\nASSISTANT:'.format(desc)
-    input_ids = tokenizer(prompt, return_tensors="pt", padding=True).input_ids.to(0)
+    real_index = findex * args.batch_size
+    # print(findex, real_index)
+    video_list = []
+    frame_list = []
+    prompt_list = []
+
+    while real_index < flen and real_index < (findex + 1) * args.batch_size:
+        line = all_frames[real_index]
+        video_id, frame_id, desc_text = json.loads(line)
+        desc_index = desc_text.index(("ASSISTANT"))
+        desc = desc_text[desc_index + 11:]
+        prompt = p1 + '"{}"\nASSISTANT:'.format(desc)
+
+        video_list.append(video_id)
+        frame_list.append(frame_id)
+        prompt_list.append(prompt)
+
+        # print(real_index, (findex + 1) * args.batch_size, line)
+        # print(frame_list)
+
+        real_index += 1
+
+    input_ids = tokenizer(prompt_list, return_tensors="pt", padding=True).input_ids.to(0)
     generation_output = model.generate(input_ids=input_ids, max_length=2048, temperature=0.1, top_p=0.7, do_sample=True)
-    res = tokenizer.batch_decode(generation_output, skip_special_tokens=True, clean_up_tokenization_spaces=False)[0]
-    answer_index = res.index("ASSISTANT")
-    answer = res[answer_index + 11:]
-    
-    resdict = {
-        'video_id': video_id,
-        'frame_id': frame_id,
-        'desc_text': desc_text,
-        'relations': answer,
-    }
-    resf.write(json.dumps(resdict) + '\n')
+    res = tokenizer.batch_decode(generation_output, skip_special_tokens=True, clean_up_tokenization_spaces=False)
+
+    for j in range(len(video_list)):
+
+        video_id = video_list[j]
+        frame_id = frame_list[j]
+        prompt = prompt_list[j]
+        res_text = res[j]
+        answer_index = res_text.index("ASSISTANT")
+        answer = res_text[answer_index + 11:]
+        
+        resdict = {
+            'video_id': video_id,
+            'frame_id': frame_id,
+            'prompt': prompt,
+            'relations': answer,
+        }
+        resf.write(json.dumps(resdict) + '\n')
 
     resf.flush()
+
+    if findex == 100:
+        break
 
 resf.close()
