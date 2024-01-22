@@ -50,52 +50,32 @@ cd /nobackup/users/bowu/code/Reasoning_vlt/workspace
 export HUGGINGFACE_HUB_CACHE=/nobackup/users/bowu/model/transformers_cache/
 
 ssh -X node0028
+ssh -X node0046
 CUDA_VISIBLE_DEVICES=0 python llama_rel.py --rank=0 tmux attach -t llava-7
 CUDA_VISIBLE_DEVICES=1 python llama_rel.py --rank=1 tmux attach -t llavasub5
-CUDA_VISIBLE_DEVICES=2 python llama_rel.py --rank=2 tmux attach -t llavasub1
+CUDA_VISIBLE_DEVICES=2 python llama_rel.py --rank=2 tmux attach -t llavasub1-22
 CUDA_VISIBLE_DEVICES=3 python llama_rel.py --rank=3 tmux attach -t llavasub3
 
 ssh -X node0047
+ssh -X node0022
 CUDA_VISIBLE_DEVICES=0 python llama_rel.py --rank=4 tmux attach -t llavasub2
 CUDA_VISIBLE_DEVICES=1 python llama_rel.py --rank=5 tmux attach -t llava4-26
 CUDA_VISIBLE_DEVICES=2 python llama_rel.py --rank=6 tmux attach -t llava6-27
 CUDA_VISIBLE_DEVICES=3 python llama_rel.py --rank=7 tmux attach -t llavasub7
 
+ssh -X node0024
+ssh -X node0051
+CUDA_VISIBLE_DEVICES=0 python llama_rel.py --rank=8 tmux attach -t llava-7
+CUDA_VISIBLE_DEVICES=1 python llama_rel.py --rank=9 tmux attach -t llavasub5
+CUDA_VISIBLE_DEVICES=2 python llama_rel.py --rank=10 tmux attach -t llavasub1-22
+CUDA_VISIBLE_DEVICES=3 python llama_rel.py --rank=11 tmux attach -t llavasub3
 
-CUDA_VISIBLE_DEVICES=0 python llama_rel.py --rank=8 tmux attach -t llavasub8
-CUDA_VISIBLE_DEVICES=1 python llama_rel.py --rank=9 tmux attach -t llavasub9 
-CUDA_VISIBLE_DEVICES=2 python llama_rel.py --rank=10 tmux attach -t llavasub10-31
-CUDA_VISIBLE_DEVICES=3 python llama_rel.py --rank=11 tmux attach -t llavasub11-32
-
-tmux attach -t llavasub3
-CUDA_VISIBLE_DEVICES=0 python llama_rel.py --rank=12 
-CUDA_VISIBLE_DEVICES=1 python llama_rel.py --rank=13 
-CUDA_VISIBLE_DEVICES=2 python llama_rel.py --rank=14 
-CUDA_VISIBLE_DEVICES=3 python llama_rel.py --rank=15
+ssh -X node0022
+ssh -X node0010
+CUDA_VISIBLE_DEVICES=0 python llama_rel.py --rank=12 tmux attach -t llavasub2
+CUDA_VISIBLE_DEVICES=1 python llama_rel.py --rank=13 tmux attach -t llava4-26
+CUDA_VISIBLE_DEVICES=2 python llama_rel.py --rank=14 tmux attach -t llava6-27
+CUDA_VISIBLE_DEVICES=3 python llama_rel.py --rank=15 tmux attach -t llavasub7
 
 
-
-tmux attach -t llava-7 
-ssh -X node0028
-CUDA_VISIBLE_DEVICES=0 python llama_rel.py --rank=0 > out0.file 2>&1 & 
-CUDA_VISIBLE_DEVICES=1 python llama_rel.py --rank=1 > out1.file 2>&1 & 
-CUDA_VISIBLE_DEVICES=2 python llama_rel.py --rank=2 > out2.file 2>&1 & 
-CUDA_VISIBLE_DEVICES=3 python llama_rel.py --rank=3 > out3.file 2>&1 & 
-
-tmux attach -t llavasub5 
-CUDA_VISIBLE_DEVICES=0 python llama_rel.py --rank=4 > out4.file 2>&1 &
-CUDA_VISIBLE_DEVICES=1 python llama_rel.py --rank=5 > out5.file 2>&1 &  
-CUDA_VISIBLE_DEVICES=2 python llama_rel.py --rank=6 > out6.file 2>&1 &  
-CUDA_VISIBLE_DEVICES=3 python llama_rel.py --rank=7 > out7.file 2>&1 & 
-
-tmux attach -t llavasub1
-CUDA_VISIBLE_DEVICES=0 python llama_rel.py --rank=8 > out8.file 2>&1 & 
-CUDA_VISIBLE_DEVICES=1 python llama_rel.py --rank=9 > out9.file 2>&1 & 
-CUDA_VISIBLE_DEVICES=2 python llama_rel.py --rank=10 > out10.file 2>&1 & 
-CUDA_VISIBLE_DEVICES=3 python llama_rel.py --rank=11 > out11.file 2>&1 & 
-
-tmux attach -t llavasub3
-CUDA_VISIBLE_DEVICES=0 python llama_rel.py --rank=12 > out12.file 2>&1 &
-CUDA_VISIBLE_DEVICES=1 python llama_rel.py --rank=13 > out13.file 2>&1 &
-CUDA_VISIBLE_DEVICES=2 python llama_rel.py --rank=14 > out14.file 2>&1 &
-CUDA_VISIBLE_DEVICES=3 python llama_rel.py --rank=15 > out15.file 2>&1 &
+# gather results

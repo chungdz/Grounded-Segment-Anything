@@ -19,7 +19,7 @@ login("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")
 
 all_obj = set("person,broom,picture,closet,cabinet,blanket,window,table,paper,notebook,refrigerator,pillow,cup,glass,bottle,shelf,shoe,medicine,phone,camera,box,sandwich,book,bed,clothes,mirror,sofa,couch,floor,bag,dish,laptop,door,towel,food,chair,doorknob,doorway,groceries,hands,light,vacuum,television".split(','))
 p1 = '''
-Generate tuples [Entity, Relation, Entity] from quoted text which is describing the image. The tuples show most important relations between two entities in the sentences. 
+Generate tuples for me [Entity, Relation, Entity] from quoted text which is describing the image. The tuples show most important relations between two entities in the sentences. 
 
 Requirements:
 1. The relation are limited in following array: [on, behind, in_front_of, on_the_side_of, above, beneath, drinking_from, have_it_on_the_back, wearing, holding, lying_on, covered_by, carrying, eating, leaning_on, sitting_on, twisting, writing_on, standing_on, touching, wiping, at, under, near] You should only use relations I give you. If the relation is not in the array, then discard the tuple or try to find relation with similar meaning.
@@ -34,7 +34,7 @@ Input test: "In the image, the woman sits on the bed near a pillow".
 Output: {[["woman", "on", "bed"],
         ["woman", "near", "pillow"]]}
 
-Now, generate tuples of relation for me with this input text:
+Now, generate tuples of relation for me with this quoted input text:
 '''
 
 
