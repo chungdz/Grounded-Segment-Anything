@@ -71,7 +71,7 @@ for _ in pbar:
                 filtered.add(arr[0])
         filtered = list(filtered)
 
-        prompt_list.append("<image>\nFind important positional relations among only these objects: " + ','.join(filtered) + "\nASSISTANT:")
+        prompt_list.append("<image>\nFind important positional relations among only these objects and do not use any other word to refer them: " + ','.join(filtered) + "\nASSISTANT:")
         image_list.append(Image.open(image_path))
         batch_list.append((video_id, frame_id))
     

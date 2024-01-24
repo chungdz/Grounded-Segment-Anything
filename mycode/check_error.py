@@ -16,7 +16,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--image_obj_path', type=str, default='/nobackup/users/bowu/data/STAR/Raw_Videos_Frames/llava_result/llava_', help='path all images')
 parser.add_argument('--image_rel_path', type=str, default='/nobackup/users/bowu/data/STAR/Raw_Videos_Frames/llama_result/llama_', help='path all images')
 parser.add_argument('--image_info_path', type=str, default='/nobackup/users/bowu/data/STAR/Raw_Videos_Frames/objects.json', help='path all images')
-parser.add_argument('--output_path', type=str, default='/nobackup/users/bowu/data/STAR/Raw_Videos_Frames/rel.json', help='path to save annotations')
+parser.add_argument('--output_path', type=str, default='/nobackup/users/bowu/data/STAR/Raw_Videos_Frames/error.json', help='path to save annotations')
 parser.add_argument('--process_num', type=int, default=17)
 args = parser.parse_args()
 
@@ -76,8 +76,6 @@ for video_id, video_info in objects.items():
                     "video_id": video_id,
                     "frame_id": frame_id,
                     "llava": llava_text,
-                    "llama": llama_text,
-                    "error": str(error),
                 })
 
             frame_info['llava'] = desc
