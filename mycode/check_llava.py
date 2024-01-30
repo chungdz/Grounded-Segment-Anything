@@ -35,9 +35,13 @@ mapping = json.load(open('/nobackup/users/bowu/data/STAR/Raw_Videos_Frames/mappi
 # prompt = "<image>\nUSER: What's the content of the image?\nASSISTANT:"
 # image = Image.open(requests.get("https://www.ilankelman.org/stopsigns/australia.jpg", stream=True).raw)
 
-video_id = '004QE'
-frame_id = '000661'
-print(mapping[video_id][frame_id])
+video_id, frame_id = '004QE', '000661'
+# video_id, frame_id = '001YG', '000264'
+
+try:
+    print(mapping[video_id][frame_id])
+except:
+    pass
 labels = objects[video_id][frame_id]['labels']
 image_path = os.path.join(args.image_root_path, video_id + '.mp4', frame_id + '.png')
 
@@ -48,9 +52,90 @@ for item in labels:
         filtered.add(arr[0])
 filtered = list(filtered)
 
-p1 = '''<image>\nFind important relations among only these objects, do not use a new word to refer an object: '''
-prompt = p1 + ','.join(filtered) + "\nASSISTANT:"
+# p1 = '''<image>\nFind important relations among only these objects, do not use a new word to refer an object: '''
+# prompt = p1 + ','.join(filtered) + "\nASSISTANT:"
+prompt = '''<image>\nHere are the objects[{}]: generate the relations with the objects the list. \nASSISTANT:'''.format(','.join(filtered))
 image = Image.open(image_path)
+
+inputs = processor(text=prompt, images=image, return_tensors="pt").to(0)
+generate_ids = model.generate(**inputs, max_length=512, temperature=0.1, top_p=0.7, do_sample=True)
+print(processor.batch_decode(generate_ids, skip_special_tokens=True, clean_up_token0104zation_spaces=False)[0])
+
+
+inputs = processor(text=prompt, images=image, return_tensors="pt").to(0)
+generate_ids = model.generate(**inputs, max_length=512, temperature=0.1, top_p=0.7, do_sample=True)
+print(processor.batch_decode(generate_ids, skip_special_tokens=True, clean_up_token0104zation_spaces=False)[0])
+
+
+prompt = '''<image>
+Here are the object pairs:
+
+[sofa - blanket,
+blanket - floor, 
+floor - hands,
+hands - cup,
+cup - box,
+box - person,
+person - bottle,
+bottle - glass,
+glass - closet,
+closet - window,
+window - person]
+
+Given the image, describe the relations for the object pairs in the above list.
+'''
+
+inputs = processor(text=prompt, images=image, return_tensors="pt").to(0)
+generate_ids = model.generate(**inputs, max_length=512, temperature=0.1, top_p=0.7, do_sample=True)
+print(processor.batch_decode(generate_ids, skip_special_tokens=True, clean_up_token0104zation_spaces=False)[0])
+
+prompt = '''<image>
+
+Here are relation list: [on, behind, in_front_of, on_the_side_of, above, beneath, drinking_from, have_it_on_the_back, wearing, holding, lying_on, covered_by, carrying, eating, leaning_on, sitting_on, twisting, writing_on, standing_on, touching, wiping, at, under, near]
+
+Here are the object pairs:
+
+[sofa - blanket,
+blanket - floor, 
+floor - hands,
+hands - cup,
+cup - box,
+box - person,
+person - bottle,
+bottle - glass,
+glass - closet,
+closet - window,
+window - person]
+
+Given the image, describe the relations for the object pairs in the above list using the relations in the relation list.
+'''
+
+inputs = processor(text=prompt, images=image, return_tensors="pt").to(0)
+generate_ids = model.generate(**inputs, max_length=512, temperature=0.1, top_p=0.7, do_sample=True)
+print(processor.batch_decode(generate_ids, skip_special_tokens=True, clean_up_token0104zation_spaces=False)[0])
+
+prompt = '''<image>
+
+Here are relations describing the image:
+
+[
+The sofa is on the floor,                                                                                                                                                                                                                                                                                
+The blanket is on the floor,                                                                                                                                                                                                                                                                                     
+The floor is where the hands are,                                                                                                                                                                                                                                                                                
+The hands are holding a cup,                                                                                                                                                                                                                                                                                
+The cup is on the box,
+The box is on the person,
+The person is holding a bottle,
+The bottle is on the glass,
+The glass is on the closet,
+The closet is next to the window,
+The window is on the person
+]
+
+Here are relation list: [on, behind, in_front_of, on_the_side_of, above, beneath, drinking_from, have_it_on_the_back, wearing, holding, lying_on, covered_by, carrying, eating, leaning_on, sitting_on, twisting, writing_on, standing_on, touching, wiping, at, under, near]
+
+Given the image, find the relations that match the relations in the relation list.
+'''
 
 inputs = processor(text=prompt, images=image, return_tensors="pt").to(0)
 generate_ids = model.generate(**inputs, max_length=512, temperature=0.1, top_p=0.7, do_sample=True)

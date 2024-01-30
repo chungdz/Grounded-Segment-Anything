@@ -79,3 +79,4 @@ CUDA_VISIBLE_DEVICES=3 python llama_rel.py --rank=15 tmux attach -t llavasub7
 
 
 # gather results
+CUDA_VISIBLE_DEVICES=0 ipython

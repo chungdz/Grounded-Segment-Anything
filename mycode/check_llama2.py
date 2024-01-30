@@ -74,7 +74,35 @@ rels = json.loads(answer[struct_start: struct_end + 2])
 print(rels)
 
 
+prompt = '''
+Here are relation list that needed: [on, behind, in_front_of, on_the_side_of, above, beneath, drinking_from, have_it_on_the_back, wearing, holding, lying_on, covered_by, carrying, eating, leaning_on, sitting_on, twisting, writing_on, standing_on, touching, wiping, at, under, near]
+Task: Generate tuples [Entity, Relation, Entity] from input text from input text that match the relations in the needed relation list.
 
+For example:
+Input text: "The person sits on the bed.
+            The person is near a pillow". 
+Answer: [["person", "sitting_on", "bed"], 
+            ["person", "near", "pillow"]]
+
+Input text: "The sofa is on the floor.                                                                                                                                                                                                                                                                              
+The blanket is on the floor.                                                                                                                                                                                                                                                                           
+The floor is where the hands are.                                                                                                                                                                                                                                                                                
+The hands are holding a cup.                                                                                                                                                                                                                                                                           
+The cup is on the box.
+The box is on the person.
+The person is holding a bottle.
+The bottle is on the glass.
+The glass is on the closet.
+The closet is next to the window.
+The window is on the person"
+Answer:'''.format(obstr, desc)
+
+input_ids = tokenizer(prompt, return_tensors="pt", padding=True).input_ids.to(0)
+# generation_output = model.generate(input_ids=input_ids, max_length=2048, do_sample=False, temperature=None, top_p=None)
+generation_output = model.generate(input_ids=input_ids, max_length=2048, temperature=0.1, top_p=0.7, do_sample=True)
+
+res = tokenizer.batch_decode(generation_output, skip_special_tokens=True, clean_up_tokenization_spaces=False)[0]
+print(res)
 
 
 
