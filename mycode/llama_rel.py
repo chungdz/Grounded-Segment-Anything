@@ -71,9 +71,10 @@ flen = len(all_frames)
 for findex in trange(sindex, flen):
     
     line = all_frames[findex]
-    video_id, frame_id, desc_text = json.loads(line)
-    desc_index = desc_text.index(("ASSISTANT"))
-    desc = desc_text[desc_index + 11:]
+    # video_id, frame_id, desc_text = json.loads(line)
+    # desc_index = desc_text.index(("ASSISTANT"))
+    # desc = desc_text[desc_index + 11:]
+    video_id, frame_id, desc = json.loads(line)
     prompt = p1 + '"{}"\nASSISTANT:'.format(desc)
     input_ids = tokenizer(prompt, return_tensors="pt", padding=True).input_ids.to(0)
     generation_output = model.generate(input_ids=input_ids, max_length=2048, temperature=0.1, top_p=0.7, do_sample=True)
@@ -84,7 +85,7 @@ for findex in trange(sindex, flen):
     resdict = {
         'video_id': video_id,
         'frame_id': frame_id,
-        'desc_text': desc_text,
+        'desc_text': desc,
         'relations': answer,
     }
     resf.write(json.dumps(resdict) + '\n')

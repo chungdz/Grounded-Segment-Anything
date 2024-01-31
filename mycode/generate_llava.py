@@ -44,43 +44,59 @@ klen = len(key_list)
 rank_num = klen // args.process_num
 rank_start = rank_num * args.rank
 rank_end = rank_num * (args.rank + 1)
-print('rank_start', rank_start, 'rank_end', rank_end)
+print('all length', klen, 'rank_start', rank_start, 'rank_end', rank_end)
 key_list = key_list[rank_start + args.sindex: rank_end]
 
-resf = open(args.output_path + str(args.rank) + '.txt', 'a')
-pbar = trange(len(key_list) // args.batch_size + 1)
+print('load previous results')
+respath = args.output_path + str(args.rank) + '.txt'
+if os.path.exists(respath):
+    with open(respath, 'r') as f:
+        res = f.readlines()
+    resf = open(respath, 'w')
+    print('previous results length', len(res), 'drop last line and start from there')
+    # avoid broken line at the end
+    for line in res[:-1]:
+        resf.write(line)
+    sindex = len(res) - 1
+else:
+    print('previous results not exist, start from 0')
+    sindex = 0
+    resf = open(respath, 'w')
 
-for _ in pbar:
+for video_id, frame_id in tqdm(key_list):
     
-    image_list = []
-    prompt_list = []
-    batch_list = []
-    for i in range(args.batch_size):
-        if len(key_list) == 0:
-            break
-        video_id, frame_id = key_list.pop()
-        image_path = os.path.join(args.image_root_path, video_id + '.mp4', frame_id + '.png')
-        pbar.set_description("Processing %s" % image_path)
+    image_path = os.path.join(args.image_root_path, video_id + '.mp4', frame_id + '.png')    
+    labels = objects[video_id][frame_id]['labels']
+
+    filtered = set()
+    for item in labels:
+        arr = item.split(' ')
+        if arr[0] in all_obj:
+            filtered.add(arr[0])
+    filtered = list(filtered)
+
+    obstr = ','.join(filtered)
+
+    prompt = '''<image>\n Describe all important relations with natural language only using the objects in the list: [{}]. 
+    ASSISTANT:'''.format(obstr)
     
-        labels = objects[video_id][frame_id]['labels']
+    image = Image.open(image_path)
 
-        filtered = set()
-        for item in labels:
-            arr = item.split(' ')
-            if arr[0] in all_obj:
-                filtered.add(arr[0])
-        filtered = list(filtered)
+    inputs = processor(text=prompt, images=image, return_tensors="pt").to(0)
+    generate_ids = model.generate(**inputs, max_length=512, temperature=0.1, top_p=0.7, do_sample=True)
+    desc_text = processor.batch_decode(generate_ids, skip_special_tokens=True, clean_up_token0104zation_spaces=False)[0]
 
-        prompt_list.append("<image>\nFind important positional relations among only these objects and do not use any other word to refer these objects: " + ','.join(filtered) + "\nASSISTANT:")
-        image_list.append(Image.open(image_path))
-        batch_list.append((video_id, frame_id))
-    
-        inputs = processor(text=prompt_list, images=image_list, return_tensors="pt", padding=True).to(0)
-        generate_ids = model.generate(**inputs, max_length=512, temperature=0.1, top_p=0.7, do_sample=True)
-        returns = processor.batch_decode(generate_ids, skip_special_tokens=True, clean_up_token0104zation_spaces=False)
+    desc_index = desc_text.index(("ASSISTANT"))
+    desc = desc_text[desc_index + 11:]
 
-    for (video_id, frame_id), return_text in zip(batch_list, returns):
-        resf.write(json.dumps([video_id, frame_id, return_text]) + '\n')
+    resdict = {
+        'video_id': video_id,
+        'frame_id': frame_id,
+        'desc': desc,
+        'objstr': obstr
+    }
+
+    resf.write(json.dumps(resdict) + '\n')
 
     resf.flush()
 

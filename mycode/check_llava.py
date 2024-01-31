@@ -35,8 +35,10 @@ mapping = json.load(open('/nobackup/users/bowu/data/STAR/Raw_Videos_Frames/mappi
 # prompt = "<image>\nUSER: What's the content of the image?\nASSISTANT:"
 # image = Image.open(requests.get("https://www.ilankelman.org/stopsigns/australia.jpg", stream=True).raw)
 
-video_id, frame_id = '004QE', '000661'
-# video_id, frame_id = '001YG', '000264'
+# video_id, frame_id = '004QE', '000661'
+# video_id, frame_id = '001YG', '000543'
+# video_id, frame_id = '00607', '000341'
+video_id, frame_id = '00HFP', '000341'
 
 try:
     print(mapping[video_id][frame_id])
@@ -52,15 +54,14 @@ for item in labels:
         filtered.add(arr[0])
 filtered = list(filtered)
 
-# p1 = '''<image>\nFind important relations among only these objects, do not use a new word to refer an object: '''
-# prompt = p1 + ','.join(filtered) + "\nASSISTANT:"
-prompt = '''<image>\nHere are the objects[{}]: generate the relations with the objects the list. \nASSISTANT:'''.format(','.join(filtered))
+# prompt = '''<image>\n Find important relations among only these objects, do not use a new word to refer an object: {} \nASSISTANT:'''.format(','.join(filtered))
+
+prompt = '''<image>\n Describe all relations only using the objects in the list: [{}]. 
+ASSISTANT:'''.format(','.join(filtered))
+
+# <image> \n Here are the objects:[sofa,blanket,floor,hands,cup,box,person,bottle,glass,closet,window], generate the relations with the objects the list"
+
 image = Image.open(image_path)
-
-inputs = processor(text=prompt, images=image, return_tensors="pt").to(0)
-generate_ids = model.generate(**inputs, max_length=512, temperature=0.1, top_p=0.7, do_sample=True)
-print(processor.batch_decode(generate_ids, skip_special_tokens=True, clean_up_token0104zation_spaces=False)[0])
-
 
 inputs = processor(text=prompt, images=image, return_tensors="pt").to(0)
 generate_ids = model.generate(**inputs, max_length=512, temperature=0.1, top_p=0.7, do_sample=True)
