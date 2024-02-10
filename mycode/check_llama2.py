@@ -5,9 +5,9 @@ import re
 
 login("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")
 
-# tokenizer = LlamaTokenizer.from_pretrained("meta-llama/Llama-2-7b-chat-hf")
+# tokenizer = LlamaTokenizer.from_pretrained("meta-llama/Llama-2-70b-chat-hf")
 # tokenizer.pad_token = tokenizer.eos_token
-# model = LlamaForCausalLM.from_pretrained("meta-llama/Llama-2-7b-chat-hf", device_map='auto')
+# model = LlamaForCausalLM.from_pretrained("meta-llama/Llama-2-70b-chat-hf", device_map='auto')
 
 # tokenizer = LlamaTokenizer.from_pretrained("meta-llama/Llama-2-13b-chat-hf")
 # tokenizer.pad_token = tokenizer.eos_token
@@ -19,9 +19,9 @@ login("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")
 # model = LlamaForCausalLM.from_pretrained("lmsys/vicuna-13b-v1.5", device_map='auto')
 # print(model.hf_device_map)
 
-tokenizer = LlamaTokenizer.from_pretrained("lmsys/vicuna-7b-v1.5")
+tokenizer = LlamaTokenizer.from_pretrained("lmsys/vicuna-33b-v1.3")
 tokenizer.pad_token = tokenizer.eos_token
-model = LlamaForCausalLM.from_pretrained("lmsys/vicuna-7b-v1.5", device_map='auto')
+model = LlamaForCausalLM.from_pretrained("lmsys/vicuna-33b-v1.3", device_map='auto')
 print(model.hf_device_map)
 
 with open("/nobackup/users/bowu/data/STAR/Raw_Videos_Frames/rel.json", 'r') as f:

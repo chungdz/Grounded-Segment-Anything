@@ -86,29 +86,25 @@ conda activate llava
 cd /nobackup/users/bowu/code/Reasoning_vlt/workspace
 export HUGGINGFACE_HUB_CACHE=/nobackup/users/bowu/model/transformers_cache/
 
-ssh -X node0028
-ssh -X node0046
+ssh -X node0043
 CUDA_VISIBLE_DEVICES=0 python generate_llava.py --rank=0 tmux attach -t llava-7
 CUDA_VISIBLE_DEVICES=1 python generate_llava.py --rank=1 tmux attach -t llavasub5
 CUDA_VISIBLE_DEVICES=2 python generate_llava.py --rank=2 tmux attach -t llavasub1-22
 CUDA_VISIBLE_DEVICES=3 python generate_llava.py --rank=3 tmux attach -t llavasub3
 
-ssh -X node0047
-ssh -X node0022
+ssh -X node0046
 CUDA_VISIBLE_DEVICES=0 python generate_llava.py --rank=4 tmux attach -t llavasub2
 CUDA_VISIBLE_DEVICES=1 python generate_llava.py --rank=5 tmux attach -t llava4-26
 CUDA_VISIBLE_DEVICES=2 python generate_llava.py --rank=6 tmux attach -t llava6-27
 CUDA_VISIBLE_DEVICES=3 python generate_llava.py --rank=7 tmux attach -t llavasub7
 
-ssh -X node0024
-ssh -X node0051
+ssh -X node0029
 CUDA_VISIBLE_DEVICES=0 python generate_llava.py --rank=8 tmux attach -t llava-7
 CUDA_VISIBLE_DEVICES=1 python generate_llava.py --rank=9 tmux attach -t llavasub5
 CUDA_VISIBLE_DEVICES=2 python generate_llava.py --rank=10 tmux attach -t llavasub1-22
 CUDA_VISIBLE_DEVICES=3 python generate_llava.py --rank=11 tmux attach -t llavasub3
 
-ssh -X node0022
-ssh -X node0010
+ssh -X node0044
 CUDA_VISIBLE_DEVICES=0 python generate_llava.py --rank=12 tmux attach -t llavasub2
 CUDA_VISIBLE_DEVICES=1 python generate_llava.py --rank=13 tmux attach -t llava4-26
 CUDA_VISIBLE_DEVICES=2 python generate_llava.py --rank=14 tmux attach -t llava6-27
