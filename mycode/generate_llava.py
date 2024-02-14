@@ -41,7 +41,7 @@ for video_id, video_info in objects.items():
         key_list.append((video_id, frame_id))
 
 klen = len(key_list)
-rank_num = klen // args.process_num
+rank_num = (klen // args.process_num) + 1
 rank_start = rank_num * args.rank
 rank_end = rank_num * (args.rank + 1)
 print('all length', klen, 'rank_start', rank_start, 'rank_end', rank_end)
