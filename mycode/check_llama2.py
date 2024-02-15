@@ -1,4 +1,4 @@
-from transformers import LlamaTokenizer, LlamaForCausalLM
+from transformers import LlamaTokenizer, LlamaForCausalLM, AutoTokenizer, AutoModelForCausalLM, AutoModelForSeq2SeqLM, AutoProcessor
 from huggingface_hub import login
 import json
 import re
@@ -19,9 +19,23 @@ login("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")
 # model = LlamaForCausalLM.from_pretrained("lmsys/vicuna-13b-v1.5", device_map='auto')
 # print(model.hf_device_map)
 
-tokenizer = LlamaTokenizer.from_pretrained("lmsys/vicuna-33b-v1.3")
-tokenizer.pad_token = tokenizer.eos_token
-model = LlamaForCausalLM.from_pretrained("lmsys/vicuna-33b-v1.3", device_map='auto')
+# tokenizer = LlamaTokenizer.from_pretrained("lmsys/vicuna-33b-v1.3")
+# tokenizer.pad_token = tokenizer.eos_token
+# model = LlamaForCausalLM.from_pretrained("lmsys/vicuna-33b-v1.3", device_map='auto')
+# print(model.hf_device_map)
+
+# tokenizer = LlamaTokenizer.from_pretrained("01-ai/Yi-34B-Chat-8bits")
+# tokenizer.pad_token = tokenizer.eos_token
+# model = LlamaForCausalLM.from_pretrained("01-ai/Yi-34B-Chat-8bits", device_map='auto')
+# print(model.hf_device_map)
+
+# tokenizer = AutoTokenizer.from_pretrained("describeai/gemini")
+# # tokenizer.pad_token = tokenizer.eos_token
+# model = AutoModelForSeq2SeqLM.from_pretrained("describeai/gemini", device_map='auto')
+# print(model.hf_device_map)
+
+tokenizer = AutoTokenizer.from_pretrained("01-ai/Yi-6B-Chat")
+model = AutoModelForCausalLM.from_pretrained("01-ai/Yi-6B-Chat", device_map='auto')
 print(model.hf_device_map)
 
 with open("/nobackup/users/bowu/data/STAR/Raw_Videos_Frames/rel.json", 'r') as f:
