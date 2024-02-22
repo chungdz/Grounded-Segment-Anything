@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 from transformers import LlamaTokenizer, LlamaForCausalLM, AutoTokenizer, AutoModelForCausalLM
+=======
+from transformers import LlamaTokenizer, LlamaForCausalLM, AutoTokenizer, AutoModelForCausalLM, AutoModelForSeq2SeqLM, AutoProcessor
+>>>>>>> 839b6048248052904cfd6af320ebdc4b9c0d5f1b
 from huggingface_hub import login
 import json
 import re
@@ -25,6 +29,7 @@ login("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")
 # model = LlamaForCausalLM.from_pretrained("lmsys/vicuna-33b-v1.3", device_map='auto')
 # print(model.hf_device_map)
 
+
 # tokenizer = AutoTokenizer.from_pretrained("01-ai/Yi-34B-Chat")
 # model = AutoModelForCausalLM.from_pretrained("01-ai/Yi-34B-Chat", torch_dtype=torch.float16, device_map='auto')
 # print(model.hf_device_map)
@@ -32,6 +37,7 @@ login("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")
 tokenizer = AutoTokenizer.from_pretrained("WizardLM/WizardLM-13B-V1.2")
 # model = AutoModelForCausalLM.from_pretrained("WizardLM/WizardLM-13B-V1.2", torch_dtype=torch.float16, device_map='auto')
 model = AutoModelForCausalLM.from_pretrained("WizardLM/WizardLM-13B-V1.2", device_map='auto')
+
 print(model.hf_device_map)
 
 with open("/nobackup/users/bowu/data/STAR/Raw_Videos_Frames/rel.json", 'r') as f:
