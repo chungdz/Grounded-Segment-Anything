@@ -1,7 +1,8 @@
-from transformers import LlamaTokenizer, LlamaForCausalLM
+from transformers import LlamaTokenizer, LlamaForCausalLM, AutoTokenizer, AutoModelForCausalLM
 from huggingface_hub import login
 import json
 import re
+import torch
 
 login("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")
 
@@ -19,9 +20,18 @@ login("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")
 # model = LlamaForCausalLM.from_pretrained("lmsys/vicuna-13b-v1.5", device_map='auto')
 # print(model.hf_device_map)
 
-tokenizer = LlamaTokenizer.from_pretrained("lmsys/vicuna-33b-v1.3")
-tokenizer.pad_token = tokenizer.eos_token
-model = LlamaForCausalLM.from_pretrained("lmsys/vicuna-33b-v1.3", device_map='auto')
+# tokenizer = LlamaTokenizer.from_pretrained("lmsys/vicuna-33b-v1.3")
+# tokenizer.pad_token = tokenizer.eos_token
+# model = LlamaForCausalLM.from_pretrained("lmsys/vicuna-33b-v1.3", device_map='auto')
+# print(model.hf_device_map)
+
+# tokenizer = AutoTokenizer.from_pretrained("01-ai/Yi-34B-Chat")
+# model = AutoModelForCausalLM.from_pretrained("01-ai/Yi-34B-Chat", torch_dtype=torch.float16, device_map='auto')
+# print(model.hf_device_map)
+
+tokenizer = AutoTokenizer.from_pretrained("WizardLM/WizardLM-13B-V1.2")
+# model = AutoModelForCausalLM.from_pretrained("WizardLM/WizardLM-13B-V1.2", torch_dtype=torch.float16, device_map='auto')
+model = AutoModelForCausalLM.from_pretrained("WizardLM/WizardLM-13B-V1.2", device_map='auto')
 print(model.hf_device_map)
 
 with open("/nobackup/users/bowu/data/STAR/Raw_Videos_Frames/rel.json", 'r') as f:
@@ -57,16 +67,16 @@ obstr = "window, person, blanket, glass, box, closet, bottle, sofa, hands, floor
 # Now, You as the assistant generate tuples of relation for me with the following quoted input text:
 # '''
 # prompt = p1 + '"{}"\nASSISTANT:'.format(desc)
-obstr = "pillow,door,cup,bottle,shoe,hands,clothes,person,floor,box,phone,table,bed,closet"
-desc = "The person is standing on a red floor, wearing a blue shirt and black pants. They are holding a pair of black shoes in their hands. The floor is next to a bed, and there is a cup and a bottle nearby. A door is also present in the scene."
+# obstr = "pillow,door,cup,bottle,shoe,hands,clothes,person,floor,box,phone,table,bed,closet"
+# desc = "The person is standing on a red floor, wearing a blue shirt and black pants. They are holding a pair of black shoes in their hands. The floor is next to a bed, and there is a cup and a bottle nearby. A door is also present in the scene."
 
 # obstr = "laptop,broom,mirror,blanket,cup,bottle,shoe,person,floor,picture,box,bag,couch,cabinet"
 # desc = "The person is cleaning the floor with a broom. The floor is white, and the person is standing on it. There is a couch in the room, and a cup is placed on a surface. A bottle is also present in the scene. \
 # The person is wearing a shoe, and there is a mirror in the room. A picture is hanging on the wall, and a box is located nearby. A bag is placed on the floor, and a chair is positioned in the room."
 
-# obstr = "sofa,blanket,cup,glass,bottle,hands,window,floor,person,box,closet"
-# desc = "The woman is holding a cup and a bottle. The cup is placed on the floor, and the bottle is located near the cup. The woman is standing in a bathroom, and there is a window nearby. The floor is covered with a rug, and a toilet is present in the bathroom. The woman is wearing a pink shirt, and ther \
-# e is a pink towel in the bathroom. A sofa is also visible in the scene, along with a blanket."
+obstr = "sofa,blanket,cup,glass,bottle,hands,window,floor,person,box,closet"
+desc = "The woman is holding a cup and a bottle. The cup is placed on the floor, and the bottle is located near the cup. The woman is standing in a bathroom, and there is a window nearby. The floor is covered with a rug, and a toilet is present in the bathroom. The woman is wearing a pink shirt, and ther \
+e is a pink towel in the bathroom. A sofa is also visible in the scene, along with a blanket."
 
 # obstr = "pillow,laptop,cup,television,bottle,book,hands,person,bag,floor,table"
 # desc = "The person is sitting on a bed with a laptop on a table in front of them. There is a cup on the table, and a bottle is placed nearby. A book is also present on the table. The person is holding a bag, and there is a television in the room. The floor is covered with a carpet."
@@ -372,7 +382,57 @@ Now based on the example and requirements, generate the same steps of thinkings 
 SO list: [{}]
 Input text:{}
 
-Thinking 1: '''.format(rel_list, rel_list, obstr, desc)
+Thinking 1:'''.format(rel_list, rel_list, obstr, desc)
+
+prompt = '''Task: detect relations between subjects and objects from input text and generate Json formatted tuple list [Subject, Relation, Object].
+Requirements:
+
+1. Only detect relations in RE list. If the relation is not in the array, then discard the tuple or try to find relation with similar meaning. RE list: {}.
+2. Only detect subjects and objects in the given SO list. If the subject or object is not in the array, then discard the tuple.
+3. The output should contain at most 8 tuples ranked by their importance. Person is more important.
+4. Do not infer or assume relations. Only depend on sentences themself.
+
+For example:
+
+SO list: [person,pillow,bag,shows,cup,bottle,book,table,chair,hands,screen]
+Input text: "In the image, the woman sits on the bed near by a pillow. The women's hands is holding the bag. The woman is wearing a blue shirt and white shoes. There is a cup on the table, and a bottle is placed nearby. 
+            A book and a monitor is also present on the table. A chair is in the room and in the front of the table". 
+
+Thinking 1: 
+        Guideline: All should contain three elements. Relations should separate from subjects and objects. Therefore based on the requirement and input text:
+Thinking 2: 
+        Guideline: Here is RE list: {}. It needs to be double checked to make sure all relations in the mid of the tuples should be exact the same as ones in the RE list. Therefore based on the requirement and input text:
+Thinking 3: 
+        Guideline: Here is SO list: [person,pillow,bag,shows,cup,bottle,book,table,chair,hands,screen]. Subjects and object at edge of the tuple should be exact the same as ones in the SO list, therefore based on the requirement and input text:
+Thinking 4: 
+        Guideline: all relations should make sense, and person is more important. Therefore based on the requirement and input text:
+Thinking 5: 
+        Guideline: find the correct tuples based on above thinkings and generate the final answer.
+                
+Answer: [["person", "sitting_on", "bed"],
+        ["person", "near", "pillow"],
+        ["person", "holding", "bag"],
+        ["person", "wearing", "shoe"],
+        ["cup", "on", "table"],
+        ["bottle", "near", "cup"],
+        ["book", "on", "table"],
+        ["screen", "on", "table"],
+        ["chair", "in_front_of", "table"]]
+END
+
+Now based on the example and requirements, generate the same steps of thinkings as the example by repeating the guidelines and then give reasoning process. Do not over thinking too much. Then generate answer and finish with END.
+
+SO list: [{}]
+Input text:{}
+
+Thinking 1:'''.format(rel_list, rel_list, obstr, desc)
+
+# messages = [
+#     {"role": "user", "content": prompt}
+# ]
+# input_ids = tokenizer.apply_chat_template(conversation=messages, tokenize=True, add_generation_prompt=True, return_tensors='pt')
+# output_ids = model.generate(input_ids.to('cuda'))
+# res = tokenizer.decode(output_ids[0][input_ids.shape[1]:], skip_special_tokens=True)
 
 input_ids = tokenizer(prompt, return_tensors="pt", padding=True).input_ids.to(0)
 # generation_output = model.generate(input_ids=input_ids, max_length=2048, do_sample=False, temperature=None, top_p=None)

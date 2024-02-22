@@ -81,7 +81,7 @@ CUDA_VISIBLE_DEVICES=3 python llama_rel.py --rank=15 tmux attach -t llavasub7
 CUDA_VISIBLE_DEVICES=0 ipython
 
 # 2024/01/30
-srun --gres=gpu:4 -n 32 --mem=250G  --time 24:00:00  --pty /bin/bash
+srun --gres=gpu:3 -n 32 --mem=250G  --time 24:00:00  --pty /bin/bash
 conda activate llava
 cd /nobackup/users/bowu/code/Reasoning_vlt/workspace
 export HUGGINGFACE_HUB_CACHE=/nobackup/users/bowu/model/transformers_cache/
