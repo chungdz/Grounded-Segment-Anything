@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-from transformers import LlamaTokenizer, LlamaForCausalLM, AutoTokenizer, AutoModelForCausalLM
-=======
 from transformers import LlamaTokenizer, LlamaForCausalLM, AutoTokenizer, AutoModelForCausalLM, AutoModelForSeq2SeqLM, AutoProcessor
->>>>>>> 839b6048248052904cfd6af320ebdc4b9c0d5f1b
 from huggingface_hub import login
 import json
 import re
