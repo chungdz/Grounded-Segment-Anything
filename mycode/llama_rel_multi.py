@@ -82,7 +82,7 @@ for findex in trange(args.sindex, math.ceil(flen / args.batch_size)):
 
         real_index += 1
 
-    input_ids = tokenizer(prompt_list, return_tensors="pt", padding=True).input_ids.to(0)
+    input_ids = tokenizer(prompt_list, return_tensors="pt", padding=True, padding_side='left').input_ids.to(0)
     generation_output = model.generate(input_ids=input_ids, max_length=2048, temperature=0.1, top_p=0.7, do_sample=True)
     res = tokenizer.batch_decode(generation_output, skip_special_tokens=True, clean_up_tokenization_spaces=False)
 

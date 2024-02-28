@@ -109,3 +109,5 @@ CUDA_VISIBLE_DEVICES=0 python generate_llava.py --rank=12 tmux attach -t llavasu
 CUDA_VISIBLE_DEVICES=1 python generate_llava.py --rank=13 tmux attach -t llava4-26
 CUDA_VISIBLE_DEVICES=2 python generate_llava.py --rank=14 tmux attach -t llava6-27
 CUDA_VISIBLE_DEVICES=3 python generate_llava.py --rank=15 tmux attach -t llavasub7
+
+pip install sentencepiece protobuf transformers accelerate

@@ -31,7 +31,7 @@ login("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")
 # print(model.hf_device_map)
 
 tokenizer = AutoTokenizer.from_pretrained("WizardLM/WizardLM-13B-V1.2")
-model = AutoModelForCausalLM.from_pretrained("WizardLM/WizardLM-13B-V1.2", torch_dtype=torch.float16, device_map='auto')
+model = AutoModelForCausalLM.from_pretrained("WizardLM/WizardLM-13B-V1.2", device_map='auto')
 # model = AutoModelForCausalLM.from_pretrained("WizardLM/WizardLM-13B-V1.2", device_map='auto')
 
 print(model.hf_device_map)
