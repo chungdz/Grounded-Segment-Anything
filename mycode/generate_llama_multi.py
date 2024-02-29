@@ -27,7 +27,7 @@ parser.add_argument('--rank', type=int, default=2)
 args = parser.parse_args()
 
 tokenizer = AutoTokenizer.from_pretrained("WizardLM/WizardLM-13B-V1.2")
-tokenizer.pad_token = "[PAD]"
+# tokenizer.pad_token = "[PAD]"
 tokenizer.padding_side = "left"
 model = AutoModelForCausalLM.from_pretrained("WizardLM/WizardLM-13B-V1.2", torch_dtype=torch.float16, device_map='auto')
 
@@ -54,7 +54,8 @@ else:
 flen = len(all_frames)
 failed_encode = 0
 batch_size = 10
-for findex in trange(sindex, flen, batch_size):
+failed_res = []
+for findex in trange(378, flen, batch_size):
 
     video_ids = []
     frame_ids = []
@@ -126,21 +127,74 @@ for findex in trange(sindex, flen, batch_size):
         frame_id = frame_ids[j]
         res = res_list[j]
 
+        em = None
         try:
-            answer_index = [m.start() for m in re.finditer("Answer:", res)][-1]
+            answer_index = [m.start() for m in re.finditer("ASSISTANT:", res)][-1]
             answer = res[answer_index:]
 
-            struct_start = answer.index('[[')
+            startp = [m.start() for m in re.finditer("\[\[", answer)]
             endp = [m.start() for m in re.finditer("]]", answer)]
+
+            add_head = False
+            add_tail = False
+            
+            if len(startp) > 0:
+                struct_start = startp[0]
+            else:
+                struct_start = [m.start() for m in re.finditer('\["', answer)][0]
+                add_head = True
+                
             if len(endp) > 0:
                 struct_end = endp[-1]
-                rels = json.loads(answer[struct_start: struct_end + 2])
             else:
                 struct_end = [m.start() for m in re.finditer('"]', answer)][-1]
-                rels = json.loads(answer[struct_start: struct_end + 2] + ']')
-        except:
-            rels = []
-            failed_encode += 1
+                add_tail = True
+
+            strlist = answer[struct_start: struct_end + 2]
+            if add_head:
+                strlist = "[" + strlist
+            if add_tail:
+                strlist = strlist + "]"
+                
+            rels = json.loads(strlist)
+        except Exception as e:
+            pass
+
+        if len(rels) == 0:
+            try:
+                answer_index = [m.start() for m in re.finditer("Answer:", res)][-1]
+                answer = res[answer_index:]
+    
+                startp = [m.start() for m in re.finditer("\[\[", answer)]
+                endp = [m.start() for m in re.finditer("]]", answer)]
+    
+                add_head = False
+                add_tail = False
+                
+                if len(startp) > 0:
+                    struct_start = startp[0]
+                else:
+                    struct_start = [m.start() for m in re.finditer('\["', answer)][0]
+                    add_head = True
+                    
+                if len(endp) > 0:
+                    struct_end = endp[-1]
+                else:
+                    struct_end = [m.start() for m in re.finditer('"]', answer)][-1]
+                    add_tail = True
+    
+                strlist = answer[struct_start: struct_end + 2]
+                if add_head:
+                    strlist = "[" + strlist
+                if add_tail:
+                    strlist = strlist + "]"
+                    
+                rels = json.loads(strlist)
+            except Exception as e:
+                em = e
+                rels = []
+                failed_encode += 1
+            
         
         resdict = {
             'video_id': video_id,
@@ -151,7 +205,12 @@ for findex in trange(sindex, flen, batch_size):
         resf.write(json.dumps(resdict) + '\n')
         resf.flush()
 
-        print(res)
+        if len(rels) == 0:
+            failed_res.append(res)
+            print(j + findex, len(failed_res))
+            print(res)
+            print(em)
+            
     # if findex % 100 == 0:
     #     break
 
