@@ -12,7 +12,7 @@ CUDA_VISIBLE_DEVICES=0 python llava_rel.py \
                         --image_info_path=/nobackup/users/bowu/data/STAR/Raw_Videos_Frames/objects.json \
                         --output_path=/nobackup/users/bowu/data/STAR/Raw_Videos_Frames/llava_
 
-srun --gres=gpu:1 -n 32 --mem=100G  --time 24:00:00  --pty /bin/bash
+srun --gres=gpu:1 -n 32 --mem=100G  --time 24:00:00  --pty /bin/bash 
 
 srun --gres=gpu:4 -n 32 --mem=250G  --time 24:00:00  --pty /bin/bash
 

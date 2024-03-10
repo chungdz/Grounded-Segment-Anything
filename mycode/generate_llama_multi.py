@@ -29,7 +29,8 @@ args = parser.parse_args()
 tokenizer = AutoTokenizer.from_pretrained("WizardLM/WizardLM-13B-V1.2")
 # tokenizer.pad_token = "[PAD]"
 tokenizer.padding_side = "left"
-model = AutoModelForCausalLM.from_pretrained("WizardLM/WizardLM-13B-V1.2", torch_dtype=torch.float16, device_map='auto')
+# model = AutoModelForCausalLM.from_pretrained("WizardLM/WizardLM-13B-V1.2", torch_dtype=torch.float16, device_map='auto')
+model = AutoModelForCausalLM.from_pretrained("WizardLM/WizardLM-13B-V1.2", torch_dtype=torch.float16, device=0)
 
 print('load data')
 with open(args.frame_info_path + str(args.rank) + '.txt', 'r') as f:
@@ -54,6 +55,7 @@ else:
 flen = len(all_frames)
 failed_encode = 0
 batch_size = 10
+# batch_size = 1
 failed_res = []
 for findex in trange(378, flen, batch_size):
 
@@ -75,27 +77,22 @@ for findex in trange(378, flen, batch_size):
         Task: detect relations between subjects and objects from input text and generate Json formatted tuple list [Subject, Relation, Object].
         Requirements:
 
-        1. Only detect relations in RE list. If the relation is not in the array, then discard the tuple or try to find relation with similar meaning. RE list: {}.
-        2. Only detect subjects and objects in the given SO list. If the subject or object is not in the array, then discard the tuple.
+        1. Only detect relations in target_relation list. If the relation is not in the array, then discard the tuple or try to find relation with similar meaning. target_relation list: {}.
+        2. Only detect subjects and objects in the given subject_object list. If the subject or object is not in the array, then discard the tuple.
         3. The output should contain at most 8 tuples ranked by their importance. Person is more important.
         4. Do not infer or assume relations. Only depend on sentences themself.
 
         For example:
 
-        SO list: [person,pillow,bag,shows,cup,bottle,book,table,chair,hands,screen]
+        subject_object list: [person,pillow,bag,shows,cup,bottle,book,table,chair,hands,screen]
         Input text: "In the image, the woman sits on the bed near by a pillow. The women's hands is holding the bag. The woman is wearing a blue shirt and white shoes. There is a cup on the table, and a bottle is placed nearby. 
                     A book and a monitor is also present on the table. A chair is in the room and in the front of the table". 
 
-        Thinking 1: 
-                Guideline: All should contain three elements. Relations should separate from subjects and objects. Therefore based on the requirement and input text:
-        Thinking 2: 
-                Guideline: Here is RE list: {}. It needs to be double checked to make sure all relations in the mid of the tuples should be exact the same as ones in the RE list. Therefore based on the requirement and input text:
-        Thinking 3: 
-                Guideline: Here is SO list: [person,pillow,bag,shows,cup,bottle,book,table,chair,hands,screen]. Subjects and object at edge of the tuple should be exact the same as ones in the SO list, therefore based on the requirement and input text:
-        Thinking 4: 
-                Guideline: all relations should make sense, and person is more important. Therefore based on the requirement and input text:
-        Thinking 5: 
-                Guideline: find the at most ten important tuples based on above thinkings and generate the final answer.
+        Thinking 1: Guideline: All should contain three elements. Relations should separate from subjects and objects.
+        Thinking 2: Guideline: Here is target_relation list: {}. It needs to be double checked to make sure all relations in the mid of the tuples should be exact the same as ones in the target_relation list.
+        Thinking 3: Guideline: Here is subject_object list: [person,pillow,bag,shows,cup,bottle,book,table,chair,hands,screen]. Subjects and object at edge of the tuple should be exact the same as ones in the subject_object list.
+        Thinking 4: Guideline: all relations should make sense, and person is more important.
+        Thinking 5: Guideline: find the at most ten important tuples based on above thinkings and generate the final answer.
                         
         Answer: [["person", "sitting_on", "bed"],
                 ["person", "near", "pillow"],
@@ -110,7 +107,7 @@ for findex in trange(378, flen, batch_size):
 
         Now based on the example and requirements, generate the same steps of thinkings as the example by repeating the guidelines and then give reasoning process. Do not over thinking too much. Then generate answer and finish with END.
 
-        SO list: [{}]
+        subject_object list: [{}]
         Input text:{}
 
         ASSISTANT: '''.format(rel_list, rel_list, objstr, desc)
@@ -210,6 +207,8 @@ for findex in trange(378, flen, batch_size):
             print(j + findex, len(failed_res))
             print(res)
             print(em)
+        # else:
+        #     print(rels)
             
     # if findex % 100 == 0:
     #     break

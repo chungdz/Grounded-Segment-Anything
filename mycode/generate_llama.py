@@ -14,7 +14,8 @@ from transformers import AutoTokenizer, AutoModelForCausalLM
 rel_list = "[on,behind,in_front_of,on_the_side_of,above,beneath,drinking_from,have_it_on_the_back,wearing,holding,lying_on,covered_by,carrying,eating,leaning_on,sitting_on,twisting,writing_on,standing_on,touching,wiping,at,under,near]"
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--frame_info_path', type=str, default='/nobackup/users/bowu/data/STAR/Raw_Videos_Frames/llava_result/llava_', help='path all images')
+# parser.add_argument('--frame_info_path', type=str, default='/nobackup/users/bowu/data/STAR/Raw_Videos_Frames/llava_result/llava_', help='path all images')
+parser.add_argument('--frame_info_path', type=str, default='/nobackup/users/bowu/data/STAR/Raw_Videos_Frames/llava_result/filtered/', help='path all images')
 parser.add_argument('--output_path', type=str, default='/nobackup/users/bowu/data/STAR/Raw_Videos_Frames/llama_result/llama_', help='path to save annotations')
 parser.add_argument('--rank', type=int, default=2)
 args = parser.parse_args()
@@ -44,6 +45,7 @@ else:
 
 flen = len(all_frames)
 failed_encode = 0
+failed_res = []
 for findex in trange(sindex, flen):
     
     line = all_frames[findex]
@@ -54,31 +56,26 @@ for findex in trange(sindex, flen):
     objstr = line_dict['objstr']
 
     prompt = '''A chat between a curious user and an artificial intelligence assistant. The assistant gives helpful, detailed, and polite answers to the user's questions. USER:
-    
+        
     Task: detect relations between subjects and objects from input text and generate Json formatted tuple list [Subject, Relation, Object].
     Requirements:
 
-    1. Only detect relations in RE list. If the relation is not in the array, then discard the tuple or try to find relation with similar meaning. RE list: {}.
-    2. Only detect subjects and objects in the given SO list. If the subject or object is not in the array, then discard the tuple.
+    1. Only detect relations in target_relation list. If the relation is not in the array, then discard the tuple or try to find relation with similar meaning. target_relation list: {}.
+    2. Only detect subjects and objects in the given subject_object list. If the subject or object is not in the array, then discard the tuple.
     3. The output should contain at most 8 tuples ranked by their importance. Person is more important.
     4. Do not infer or assume relations. Only depend on sentences themself.
 
     For example:
 
-    SO list: [person,pillow,bag,shows,cup,bottle,book,table,chair,hands,screen]
+    subject_object list: [person,pillow,bag,shows,cup,bottle,book,table,chair,hands,screen]
     Input text: "In the image, the woman sits on the bed near by a pillow. The women's hands is holding the bag. The woman is wearing a blue shirt and white shoes. There is a cup on the table, and a bottle is placed nearby. 
                 A book and a monitor is also present on the table. A chair is in the room and in the front of the table". 
 
-    Thinking 1: 
-            Guideline: All should contain three elements. Relations should separate from subjects and objects. Therefore based on the requirement and input text:
-    Thinking 2: 
-            Guideline: Here is RE list: {}. It needs to be double checked to make sure all relations in the mid of the tuples should be exact the same as ones in the RE list. Therefore based on the requirement and input text:
-    Thinking 3: 
-            Guideline: Here is SO list: [person,pillow,bag,shows,cup,bottle,book,table,chair,hands,screen]. Subjects and object at edge of the tuple should be exact the same as ones in the SO list, therefore based on the requirement and input text:
-    Thinking 4: 
-            Guideline: all relations should make sense, and person is more important. Therefore based on the requirement and input text:
-    Thinking 5: 
-            Guideline: find the correct tuples based on above thinkings and generate the final answer.
+    Thinking 1: Guideline: All should contain three elements. Relations should separate from subjects and objects.
+    Thinking 2: Guideline: Here is target_relation list: {}. It needs to be double checked to make sure all relations in the mid of the tuples should be exact the same as ones in the target_relation list.
+    Thinking 3: Guideline: Here is subject_object list: [person,pillow,bag,shows,cup,bottle,book,table,chair,hands,screen]. Subjects and object at edge of the tuple should be exact the same as ones in the subject_object list.
+    Thinking 4: Guideline: all relations should make sense, and person is more important.
+    Thinking 5: Guideline: find the at most ten important tuples based on above thinkings and generate the final answer.
                     
     Answer: [["person", "sitting_on", "bed"],
             ["person", "near", "pillow"],
@@ -93,7 +90,7 @@ for findex in trange(sindex, flen):
 
     Now based on the example and requirements, generate the same steps of thinkings as the example by repeating the guidelines and then give reasoning process. Do not over thinking too much. Then generate answer and finish with END.
 
-    SO list: [{}]
+    subject_object list: [{}]
     Input text:{}
 
     ASSISTANT: '''.format(rel_list, rel_list, objstr, desc)
@@ -102,16 +99,74 @@ for findex in trange(sindex, flen):
     generation_output = model.generate(input_ids=input_ids, max_length=2048, temperature=0.1, top_p=0.7, do_sample=True)
     res = tokenizer.batch_decode(generation_output, skip_special_tokens=True, clean_up_tokenization_spaces=False)[0]
 
+    em = None
+    rels = []
     try:
-        answer_index = [m.start() for m in re.finditer("Answer:", res)][-1]
+        answer_index = [m.start() for m in re.finditer("ASSISTANT:", res)][-1]
         answer = res[answer_index:]
 
-        struct_start = answer.index('[[')
-        struct_end = answer.index(']]')
-        rels = json.loads(answer[struct_start: struct_end + 2])
-    except:
-        rels = []
-        failed_encode += 1
+        startp = [m.start() for m in re.finditer("\[\[", answer)]
+        endp = [m.start() for m in re.finditer("]]", answer)]
+
+        add_head = False
+        add_tail = False
+        
+        if len(startp) > 0:
+            struct_start = startp[0]
+        else:
+            struct_start = [m.start() for m in re.finditer('\["', answer)][0]
+            add_head = True
+            
+        if len(endp) > 0:
+            struct_end = endp[-1]
+        else:
+            struct_end = [m.start() for m in re.finditer('"]', answer)][-1]
+            add_tail = True
+
+        strlist = answer[struct_start: struct_end + 2]
+        if add_head:
+            strlist = "[" + strlist
+        if add_tail:
+            strlist = strlist + "]"
+            
+        rels = json.loads(strlist)
+    except Exception as e:
+        pass
+
+    if len(rels) == 0:
+        try:
+            answer_index = [m.start() for m in re.finditer("Answer:", res)][-1]
+            answer = res[answer_index:]
+
+            startp = [m.start() for m in re.finditer("\[\[", answer)]
+            endp = [m.start() for m in re.finditer("]]", answer)]
+
+            add_head = False
+            add_tail = False
+            
+            if len(startp) > 0:
+                struct_start = startp[0]
+            else:
+                struct_start = [m.start() for m in re.finditer('\["', answer)][0]
+                add_head = True
+                
+            if len(endp) > 0:
+                struct_end = endp[-1]
+            else:
+                struct_end = [m.start() for m in re.finditer('"]', answer)][-1]
+                add_tail = True
+
+            strlist = answer[struct_start: struct_end + 2]
+            if add_head:
+                strlist = "[" + strlist
+            if add_tail:
+                strlist = strlist + "]"
+                
+            rels = json.loads(strlist)
+        except Exception as e:
+            em = e
+            rels = []
+            failed_encode += 1
     
     resdict = {
         'video_id': video_id,
@@ -122,7 +177,13 @@ for findex in trange(sindex, flen):
     resf.write(json.dumps(resdict) + '\n')
     resf.flush()
 
-    print(res)
+    # print(res)
+    if len(rels) == 0:
+        failed_res.append(res)
+        print(findex, len(failed_res))
+        print(res)
+        print(em)
+    
     # if findex % 100 == 0:
     #     break
 
