@@ -5,9 +5,16 @@ import json
 import sys
 from tqdm import tqdm, trange
 import re
-import torch
-import numpy as np
-from transformers import AutoTokenizer, AutoModelForCausalLM
+from pprint import pprint
+
+from dotenv import load_dotenv
+from genai.client import Client
+from genai.credentials import Credentials
+from genai.schema import (
+    TextGenerationParameters,
+    TextGenerationReturnOptions,
+)
+
 
 # from huggingface_hub import login
 # login("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")
@@ -15,20 +22,19 @@ rel_list = "[on,behind,in_front_of,on_the_side_of,above,beneath,drinking_from,ha
 
 parser = argparse.ArgumentParser()
 # parser.add_argument('--frame_info_path', type=str, default='/nobackup/users/bowu/data/STAR/Raw_Videos_Frames/llava_result/llava_', help='path all images')
-parser.add_argument('--frame_info_path', type=str, default='/nobackup/users/bowu/data/STAR/Raw_Videos_Frames/llava_result/filtered/', help='path all images')
-parser.add_argument('--output_path', type=str, default='/nobackup/users/bowu/data/STAR/Raw_Videos_Frames/llama_result/llama_', help='path to save annotations')
-parser.add_argument('--rank', type=int, default=2)
+parser.add_argument('--frame_info_path', type=str, default='/nobackup/users/bowu/data/STAR/Raw_Videos_Frames/llava_result/llava_filtered.txt', help='path all images')
+parser.add_argument('--output_path', type=str, default='/nobackup/users/bowu/data/STAR/Raw_Videos_Frames/llama_result/llama_all.txt', help='path to save annotations')
 args = parser.parse_args()
 
-tokenizer = AutoTokenizer.from_pretrained("WizardLM/WizardLM-13B-V1.2")
-model = AutoModelForCausalLM.from_pretrained("WizardLM/WizardLM-13B-V1.2", torch_dtype=torch.float16, device_map='auto')
+load_dotenv()
+client = Client(credentials=Credentials.from_env())
 
 print('load data')
-with open(args.frame_info_path + str(args.rank) + '.txt', 'r') as f:
+with open(args.frame_info_path, 'r') as f:
     all_frames = f.readlines()
 
 print('load previous results')
-respath = args.output_path + str(args.rank) + '.txt'
+respath = args.output_path
 if os.path.exists(respath):
     with open(respath, 'r') as f:
         res = f.readlines()
@@ -44,9 +50,9 @@ else:
     resf = open(respath, 'w')
 
 flen = len(all_frames)
-failed_encode = 0
-failed_res = []
-for findex in trange(sindex, flen):
+prompt_list = []
+res_dict_list = []
+for findex in trange(sindex, 20):
     
     line = all_frames[findex]
     line_dict = json.loads(line)
@@ -56,7 +62,6 @@ for findex in trange(sindex, flen):
     objstr = line_dict['objstr']
 
     prompt = '''A chat between a curious user and an artificial intelligence assistant. The assistant gives helpful, detailed, and polite answers to the user's questions. USER:
-        
     Task: detect relations between subjects and objects from input text and generate Json formatted tuple list [Subject, Relation, Object].
     Requirements:
 
@@ -68,41 +73,64 @@ for findex in trange(sindex, flen):
     For example:
 
     subject_object list: [person,pillow,bag,shows,cup,bottle,book,table,chair,hands,screen]
-    Input text: "In the image, the woman sits on the bed near by a pillow. The women's hands is holding the bag. The woman is wearing a blue shirt and white shoes. There is a cup on the table, and a bottle is placed nearby. 
-                A book and a monitor is also present on the table. A chair is in the room and in the front of the table". 
+    Input text: "In the image, the woman sits on the bed near by a pillow. The women's hands is holding the bag. The woman is wearing a blue shirt and white shoes. There is a cup on the table, and a bottle is placed nearby. A book and a monitor is also present on the table. A chair is in the room and in the front of the table". 
 
     Thinking 1: Guideline: All should contain three elements. Relations should separate from subjects and objects.
     Thinking 2: Guideline: Here is target_relation list: {}. It needs to be double checked to make sure all relations in the mid of the tuples should be exact the same as ones in the target_relation list.
     Thinking 3: Guideline: Here is subject_object list: [person,pillow,bag,shows,cup,bottle,book,table,chair,hands,screen]. Subjects and object at edge of the tuple should be exact the same as ones in the subject_object list.
     Thinking 4: Guideline: all relations should make sense, and person is more important.
-    Thinking 5: Guideline: find the at most ten important tuples based on above thinkings and generate the final answer.                
-    Answer: [["person", "sitting_on", "bed"],
-            ["person", "near", "pillow"],
-            ["person", "holding", "bag"],
-            ["person", "wearing", "shoe"],
-            ["cup", "on", "table"],
-            ["bottle", "near", "cup"],
-            ["book", "on", "table"],
-            ["screen", "on", "table"],
-            ["chair", "in_front_of", "table"]]
+    Thinking 5: Guideline: find the at most ten important tuples based on above thinkings and generate the final Answer:
+    [["person", "sitting_on", "bed"],
+    ["person", "near", "pillow"],
+    ["person", "holding", "bag"],
+    ["person", "wearing", "shoe"],
+    ["cup", "on", "table"],
+    ["bottle", "near", "cup"],
+    ["book", "on", "table"],
+    ["screen", "on", "table"],
+    ["chair", "in_front_of", "table"]]
     END
 
-    Now based on the example and requirements, generate the same steps of thinkings as the example by repeating the guidelines and then give reasoning process. Do not over thinking too much. Then generate answer and finish with END.
+    Now based on the example and requirements, generate the same steps of thinkings as the example by repeating the guidelines and then give reasoning process. Do not over thinking too much. Then generate answer and finish the output with END.
 
     subject_object list: [{}]
     Input text:{}
-
     ASSISTANT: '''.format(rel_list, rel_list, objstr, desc)
+    
+    resdict = {
+        'video_id': video_id,
+        'frame_id': frame_id,
+    }
+    
+    prompt_list.append(prompt)
+    res_dict_list.append(resdict)
 
-    input_ids = tokenizer(prompt, return_tensors="pt", padding=True).input_ids.to(0)
-    generation_output = model.generate(input_ids=input_ids, max_length=2048, temperature=0.1, top_p=0.7, do_sample=True)
-    res = tokenizer.batch_decode(generation_output, skip_special_tokens=True, clean_up_tokenization_spaces=False)[0]
+failed_encode = 0
+for idx, response in tqdm(
+    enumerate(
+        client.text.generation.create(
+            model_id="meta-llama/llama-2-70b-chat",
+            inputs=prompt_list,
+            parameters=TextGenerationParameters(
+                max_new_tokens=2048,
+                min_new_tokens=20,
+                return_options=TextGenerationReturnOptions(
+                    input_text=True,
+                ),
+            ),
+        )
+    ),
+    total=len(prompt_list)):
+
+    result = response.results[0]
+    res_dict = res_dict_list[idx]
+    res_dict['input'] = result.input_text
+    res_dict['res'] = result.generated_text
 
     em = None
     rels = []
     try:
-        answer_index = [m.start() for m in re.finditer("ASSISTANT:", res)][-1]
-        answer = res[answer_index:]
+        answer = result.generated_text
 
         startp = [m.start() for m in re.finditer("\[\[", answer)]
         endp = [m.start() for m in re.finditer("]]", answer)]
@@ -134,8 +162,8 @@ for findex in trange(sindex, flen):
 
     if len(rels) == 0:
         try:
-            answer_index = [m.start() for m in re.finditer("Answer:", res)][-1]
-            answer = res[answer_index:]
+            answer_index = [m.start() for m in re.finditer("Answer:", result.generated_text)][-1]
+            answer = result.generated_text[answer_index:]
 
             startp = [m.start() for m in re.finditer("\[\[", answer)]
             endp = [m.start() for m in re.finditer("]]", answer)]
@@ -166,25 +194,16 @@ for findex in trange(sindex, flen):
             em = e
             rels = []
             failed_encode += 1
-    
-    resdict = {
-        'video_id': video_id,
-        'frame_id': frame_id,
-        'rels': rels,
-        'res': res
-    }
+
+    resdict['rels'] = rels
     resf.write(json.dumps(resdict) + '\n')
     resf.flush()
 
-    # print(res)
     if len(rels) == 0:
-        failed_res.append(res)
-        print(findex, len(failed_res))
-        print(res)
+        print(findex)
+        print(result.generated_text)
         print(em)
-    
-    # if findex % 100 == 0:
-    #     break
+        failed_encode += 1
 
 print('failed_encode', failed_encode)
 resf.close()

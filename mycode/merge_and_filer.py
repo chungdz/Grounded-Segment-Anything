@@ -40,4 +40,7 @@ for j in range(32):
     new_file = open("filtered/" + str(j) + '.txt', "w")
     new_file.writelines(newlines[j * perfile: (j + 1) * perfile])
     new_file.close()
-# new_file.writelines(newlines)
+
+new_file = open("llava_filtered.txt", "w")
+new_file.writelines(newlines)
+
