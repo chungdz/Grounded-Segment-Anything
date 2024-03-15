@@ -57,7 +57,7 @@ failed_encode = 0
 batch_size = 10
 # batch_size = 1
 failed_res = []
-for findex in trange(378, flen, batch_size):
+for findex in trange(sindex, flen, batch_size):
 
     video_ids = []
     frame_ids = []
