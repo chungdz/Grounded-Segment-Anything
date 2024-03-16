@@ -34,9 +34,9 @@ for line in all_lines:
         newlines.append(line)
 
 
-perfile = math.ceil(len(newlines) / 32)
+perfile = math.ceil(len(newlines) / 2)
 print(len(newlines), perfile)
-for j in range(32):
+for j in range(2):
     new_file = open("filtered/" + str(j) + '.txt', "w")
     new_file.writelines(newlines[j * perfile: (j + 1) * perfile])
     new_file.close()
