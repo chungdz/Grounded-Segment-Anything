@@ -28,7 +28,7 @@ parser.add_argument('--frame_info_path', type=str, default='/nobackup/users/bowu
 parser.add_argument('--output_path', type=str, default='/nobackup/users/bowu/data/STAR/Raw_Videos_Frames/llama_result/llama_0.txt', help='path to save annotations')
 args = parser.parse_args()
 
-load_dotenv()
+load_dotenv(os.path.expanduser('~')+'/.env')
 client = Client(credentials=Credentials.from_env())
 
 print('load data')
@@ -107,9 +107,12 @@ for findex in trange(sindex, flen):
     prompt_list.append(prompt)
     res_dict_list.append(resdict)
 
+print(len(prompt_list), len(res_dict_list))
+
+
 failed_encode = 0
 plen = len(prompt_list)
-batch_size = 400
+batch_size = 4
 for pindex in trange(0, plen, batch_size):
 
     prompt_list_batch = prompt_list[pindex: pindex + batch_size]
@@ -155,18 +158,18 @@ for pindex in trange(0, plen, batch_size):
         else:
             em = "no pattern found"
 
-        resdict['rels'] = rels
-        resf.write(json.dumps(resdict) + '\n')
+        res_dict['rels'] = rels
+        resf.write(json.dumps(res_dict) + '\n')
         resf.flush()
 
-        if len(rels) == 0:
-            print(prompt_list_batch[idx])
-            print(result.generated_text)
-            print(em)
-            failed_encode += 1  
-            print('rels', rels)
+        # if len(rels) == 0:
+        #     print(prompt_list_batch[idx])
+        #     print(result.generated_text)
+        #     print(em)
+        #     failed_encode += 1  
+        #     print('rels', rels)
     
-    assert(idx == batch_size - 1)
+    # assert(idx == batch_size - 1)
 
 print('failed_encode', failed_encode)
 resf.close()
