@@ -63,15 +63,15 @@ for findex in trange(sindex, flen):
     desc = line_dict['desc']
     objstr = line_dict['objstr']
 
-    prompt = '''USER:
-    Task: detect relations between subjects and objects from input text and generate Json formatted tuple list [Subject, Relation, Object].
+    prompt = '''One question from a user to an artificial intelligence assistant. The assistant gives one helpful, detailed, and polite answer. USER:
+    Task: detect relations between subjects and objects from quoted input text and generate Json formatted tuple list [Subject, Relation, Object].
 
     Requirements:
     1. Only detect relations in target_relation list. If the relation is not in the array, then discard the tuple or try to find relation with similar meaning. target_relation list: {}.
     2. Only detect subjects and objects in the given subject_object list. If the subject or object is not in the array, then discard the tuple.
     3. The output should contain at most ten tuples ranked by their importance. Person is more important.
     4. Do not infer or assume relations. Only depend on sentences themself.
-    5. The Answer should be in valid Json format. All three words in tuples should be double quoted. Use brackets correctly. Use four stars at the beginning and end of the answer to indicate the start and end of the answer.
+    5. The Answer should be in valid Json format. All three words in tuples should be double quoted. Use square brackets correctly. Use four stars at the beginning and end of the answer to indicate the start and end of the answer.
 
     For example:
     subject_object list: [person,pillow,bag,shows,cup,bottle,book,table,chair,hands,screen]
@@ -80,7 +80,7 @@ for findex in trange(sindex, flen):
     Thinking guideline 2: Here is target_relation list: {}. It needs to be double checked to make sure all relations in the mid of the tuples should be exact the same as ones in the target_relation list.
     Thinking guideline 3: Here is subject_object list: [person,pillow,bag,shows,cup,bottle,book,table,chair,hands,screen]. Subjects and object at edge of the tuple should be exact the same as ones in the subject_object list.
     Thinking guideline 4: all relations should make sense, and person is more important.
-    Thinking guideline 5: find the at most ten important tuples based on above thinkings and generate the final answer. The answer should in valid Json format. All three words in tuples should be double quoted. Use brackets correctly. Use four stars at the beginning and end of the answer to indicate the start and end of the answer.
+    Thinking guideline 5: find the at most ten important tuples based on above thinkings and generate the final answer. The answer should in valid Json format. All three words in tuples should be double quoted. Use square brackets correctly. Use four stars at the beginning and end of the answer to indicate the start and end of the answer.
     Answer:
     ****[["person", "sitting_on", "bed"],
     ["person", "near", "pillow"],
@@ -93,11 +93,11 @@ for findex in trange(sindex, flen):
     ["chair", "in_front_of", "table"]]****
     END
 
-    Now give answer for the following subject_object list and input text. Based on the above example and requirements, generate the same thinkings guidelines in the example. And then generate the final answer in Json format with four stars at the start and end. Use brackets correctly. Do not over thinking too much.
+    The following are subject_object list and quoted input text. Based on the above example and requirements, generate the same thinkings guidelines in the example. And then generate the final answer in Json format with four stars at the start and end. Use square rackets correctly. Do not over thinking too much. No more words after the END.
 
     subject_object list: [{}]
-    Input text:{}
-    ASSISTENT:'''.format(rel_list, rel_list, objstr, desc)
+    Input text:"{}"
+    ASSISTENT: Sure, I can help you with the new subject_object list and quoted input text.'''.format(rel_list, rel_list, objstr, desc)
     
     resdict = {
         'video_id': video_id,
@@ -110,7 +110,7 @@ for findex in trange(sindex, flen):
 failed_encode = 0
 plen = len(prompt_list)
 batch_size = 400
-for pindex in trange(0, 2000, batch_size):
+for pindex in trange(0, plen, batch_size):
 
     prompt_list_batch = prompt_list[pindex: pindex + batch_size]
     res_dict_list_batch = res_dict_list[pindex: pindex + batch_size]
@@ -138,14 +138,22 @@ for pindex in trange(0, 2000, batch_size):
 
         em = None
         rels = []
-        try:
-            answer = result.generated_text
-            startp = [m.start() for m in re.finditer("\*\[", answer)][-1]
-            endp = [m.start() for m in re.finditer("]\*", answer)][-1]
-            strlist = answer[startp + 1: endp + 1]
-            rels = json.loads(strlist)
-        except Exception as e:
-            em = e
+        answer = result.generated_text.replace('\n', '')
+        find_pattern = False
+        searchres = re.findall("\*\*\[\[(.*?)\]\]\*\*", answer)
+        slen = len(searchres)
+        if slen > 0:
+            curindex = slen - 1
+            while not find_pattern and curindex >= 0:
+                try:
+                    strlist = '[[' + searchres[curindex] + ']]'
+                    rels = json.loads(strlist)
+                    find_pattern = True
+                except Exception as e:
+                    em = e
+                    curindex -= 1
+        else:
+            em = "no pattern found"
 
         resdict['rels'] = rels
         resf.write(json.dumps(resdict) + '\n')
