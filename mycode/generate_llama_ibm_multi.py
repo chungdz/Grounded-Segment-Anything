@@ -112,7 +112,7 @@ print(len(prompt_list), len(res_dict_list))
 
 failed_encode = 0
 plen = len(prompt_list)
-batch_size = 4
+batch_size = 400
 for pindex in trange(0, plen, batch_size):
 
     prompt_list_batch = prompt_list[pindex: pindex + batch_size]
