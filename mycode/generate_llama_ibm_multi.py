@@ -24,11 +24,13 @@ parser = argparse.ArgumentParser()
 # parser.add_argument('--frame_info_path', type=str, default='/nobackup/users/bowu/data/STAR/Raw_Videos_Frames/llava_result/llava_', help='path all images')
 # parser.add_argument('--frame_info_path', type=str, default='/nobackup/users/bowu/data/STAR/Raw_Videos_Frames/llava_result/llava_filtered.txt', help='path all images')
 # parser.add_argument('--output_path', type=str, default='/nobackup/users/bowu/data/STAR/Raw_Videos_Frames/llama_result/llama_all.txt', help='path to save annotations')
-parser.add_argument('--frame_info_path', type=str, default='/nobackup/users/bowu/data/STAR/Raw_Videos_Frames/llava_result/filtered/0.txt', help='path all images')
-parser.add_argument('--output_path', type=str, default='/nobackup/users/bowu/data/STAR/Raw_Videos_Frames/llama_result/llama_0.txt', help='path to save annotations')
+parser.add_argument('--frame_info_path', type=str, default='/nobackup/users/bowu/code/Reasoning_vlt/graph_gen/outputs/llava_result/filtered/0.txt', help='path all images')
+parser.add_argument('--output_path', type=str, default='/nobackup/users/bowu/code/Reasoning_vlt/graph_gen/outputs/llama_result/llama_0.txt', help='path to save annotations')
+parser.add_argument('--batch_size', type=int, default=400)
+parser.add_argument('--env', type=str, default='/.env')
 args = parser.parse_args()
 
-load_dotenv(os.path.expanduser('~')+'/.env')
+load_dotenv(os.path.expanduser('~') + args.env)
 client = Client(credentials=Credentials.from_env())
 
 print('load data')
@@ -112,7 +114,7 @@ print(len(prompt_list), len(res_dict_list))
 
 failed_encode = 0
 plen = len(prompt_list)
-batch_size = 400
+batch_size = args.batch_size
 for pindex in trange(0, plen, batch_size):
 
     prompt_list_batch = prompt_list[pindex: pindex + batch_size]
