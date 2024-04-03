@@ -112,8 +112,10 @@ CUDA_VISIBLE_DEVICES=3 python generate_llava.py --rank=15 tmux attach -t llavasu
 
 pip install sentencepiece protobuf transformers accelerate
 
+python merge_and_filter.py
+
 python generate_llama_ibm_multi.py \
-        --frame_info_path='./outputs/llava_result/filtered/10.txt' \
+        --frame_info_path='./outputs/llava_result/filtered/11.txt' \
         --output_path='./outputs/llama_result/llama_11.txt' \
         --batch_size=100 \
         --env=/code/Reasoning_vlt/graph_gen/.env
@@ -123,3 +125,10 @@ python generate_llama_ibm_multi.py \
         --output_path='./outputs/llama_result/llama_10.txt' \
         --batch_size=400 \
         --env=/.env
+
+python generate_llama_ibm_multi.py \
+        --frame_info_path='./outputs/llava_result/filtered/11.txt' \
+        --output_path='./outputs/llama_result/llama_11.txt' \
+        --batch_size=400 \
+        --env=/.env
+
