@@ -1,6 +1,7 @@
 import json
 from tqdm import trange, tqdm
 from collections import defaultdict
+import pandas as pd
 
 label_path = "/home/azon/data/star/classes/"
 
@@ -38,8 +39,11 @@ for file in files:
             
             finfo = {
                 "rel_labels": [],
-                "rel_pairs": []
+                "rel_pairs": [],
+                'bbox_labels': []
             }
+
+            all_obj = set()
             relations = line_dict['rels']
             for rtuple in relations:
                 if len(rtuple) != 3:
@@ -48,12 +52,53 @@ for file in files:
                 if o1 in obj_dict and o2 in obj_dict and r in rel_dict:
                     finfo["rel_labels"].append(rel_dict[r])
                     finfo["rel_pairs"].append([obj_dict[o1], obj_dict[o2]])
+                    all_obj.add(obj_dict[o1])
+                    all_obj.add(obj_dict[o2])
+            finfo['bbox_labels'] = list(all_obj)
             
             video_dict[video_id][frame_id] = finfo
             
 vk = list(video_dict.keys())
 
+target = pd.read_csv("/home/azon/data/star/Video_Keyframe_IDs.csv")
 
+q2v = {}
+for index, row in tqdm(target.iterrows(), total=len(target)):
+    video_id = row["video_id"]
+    question_id = row["question_id"]
+    q2v[question_id] = video_id
+
+graph_path = "/home/azon/data/star/rpl_act_8/"
+all_files = ["Interaction_GT_Sem/star_Interaction_action_transition_model.json", 
+             "Feasibility_GT_Sem/star_Feasibility_action_transition_model.json",
+             "Prediction_GT_Sem/star_Prediction_action_transition_model.json",
+             "Sequence_GT_Sem/star_Sequence_action_transition_model.json"]
+output_path = "/home/azon/data/star/new_graphs/"
+output_files = ["Interaction.json", "Feasibility.json", "Prediction.json", "Sequence.json"]
+
+for i, file in enumerate(all_files):
+    with open(graph_path + file, 'r') as f:
+        data = json.load(f)
+        
+        for q in tqdm(data):
+            qid = q[0]
+            video_id = q2v[qid]
+            fdict = q[1]
+            prev = None
+            for fid, finfo in fdict.items():
+                if 'padding' in fid:
+                    finfo['rel_labels'] = prev['rel_labels']
+                    finfo['rel_pairs'] = prev['rel_pairs']
+                    finfo['bbox_labels'] = prev['bbox_labels']
+                else:
+                    finfo['rel_labels'] = video_dict[video_id][fid]['rel_labels']
+                    finfo['rel_pairs'] = video_dict[video_id][fid]['rel_pairs']
+                    finfo['bbox_labels'] = video_dict[video_id][fid]['bbox_labels']
+
+                prev = finfo
+
+        with open(output_path + output_files[i], 'w') as f:
+            json.dump(data, f)
 # check relation list
 
 import json
