@@ -105,37 +105,5 @@ for i, file in enumerate(all_files):
 print(len(missing_fid))
 
 json.dump(missing_fid, open("/home/azon/data/star/new_graphs2/missing_fid.json", 'w'))
-# check relation list
 
-import json
-
-files = ['Interaction_train.json', 'Interaction_val.json', 'Interaction_test.json', 
-         'Prediction_train.json', 'Prediction_val.json', 'Prediction_test.json', 
-         'Sequence_train.json', 'Sequence_val.json', 'Sequence_test.json', 
-         'Feasibility_train.json', 'Feasibility_val.json', 'Feasibility_test.json']
-for file in files:
-    a = json.load(open(file, 'r'))
-    res = set()
-    for q in a:
-        fdict = q['situations']
-        for fid, finfo in fdict.items():
-            for rel in finfo['rel_labels']:
-                    res.add(rel)
-    print(file)
-    print(res)
-
-
-import json
-
-files = ["Interaction_GT_Sem/star_Interaction_action_transition_model.json"]
-for file in files:
-    a = json.load(open(file, 'r'))
-    res = set()
-    for q in a:
-        fdict = q[1]
-        for fid, finfo in fdict.items():
-            for rel in finfo['rel_labels']:
-                    res.add(rel)
-    print(file)
-    print(res)
 
