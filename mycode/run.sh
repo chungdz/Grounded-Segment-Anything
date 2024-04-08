@@ -132,3 +132,12 @@ python generate_llama_ibm_multi.py \
         --batch_size=400 \
         --env=/.env
 
+python build_graph_gt.py
+# find missing part
+python merge_and_filter.py
+
+python generate_llama_ibm_multi.py \
+        --frame_info_path='./outputs/llava_result/filtered/2.txt' \
+        --output_path='./outputs/llama_result/llama_2.txt' \
+        --batch_size=400 \
+        --env=/.env
