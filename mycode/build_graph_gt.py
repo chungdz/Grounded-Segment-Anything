@@ -82,22 +82,23 @@ for i, file in enumerate(all_files):
     with open(graph_path + file, 'r') as f:
         data = json.load(f)
         newdata = []
+        
         for q in tqdm(data):
             qid = q['question_id']
             video_id = q2v[qid]
             fdict = q['situations']
-            prev = None
+            newfdict = defaultdict(dict)
             for fid, finfo in fdict.items():
                 if fid in video_dict[video_id]:
-                    finfo['rel_labels'] = video_dict[video_id][fid]['rel_labels']
-                    finfo['rel_pairs'] = video_dict[video_id][fid]['rel_pairs']
-                    finfo['bbox_labels'] = video_dict[video_id][fid]['bbox_labels']
+                    newfdict[fid]['rel_labels'] = video_dict[video_id][fid]['rel_labels']
+                    newfdict[fid]['rel_pairs'] = video_dict[video_id][fid]['rel_pairs']
+                    newfdict[fid]['bbox_labels'] = video_dict[video_id][fid]['bbox_labels']
+                    newfdict[fid]['actions'] = finfo['actions']
                 else:
                     print("Not found", fid, video_id)
                     missing_fid.append([video_id, fid])
 
-                prev = finfo
-            newdata.append([qid, fdict])
+            newdata.append([qid, newfdict])
 
         with open(output_path + output_files[i], 'w') as f:
             json.dump(newdata, f)
