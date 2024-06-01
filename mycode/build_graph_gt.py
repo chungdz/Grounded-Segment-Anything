@@ -2,6 +2,7 @@ import json
 from tqdm import trange, tqdm
 from collections import defaultdict
 import pandas as pd
+from action_detect.frame_to_actions import load_action_classes, load_prediction_result, frame_to_actions
 
 label_path = "/home/azon/data/star/classes/"
 
@@ -77,7 +78,11 @@ all_files = ["Feasibility_test.json",
 output_path = "/home/azon/data/star/new_graphs2/"
 output_files = ["Interaction.json", "Feasibility.json", "Prediction.json", "Sequence.json"]
 
+actions_dict = load_action_classes('action_detect/action_classes.txt')
+result_dict = load_prediction_result('action_detect/masked_result.json')
+
 missing_fid = []
+zero_actions = []
 for i, file in enumerate(all_files):
     with open(graph_path + file, 'r') as f:
         data = json.load(f)
@@ -90,12 +95,18 @@ for i, file in enumerate(all_files):
             newfdict = defaultdict(dict)
             for fid, finfo in fdict.items():
                 if fid in video_dict[video_id]:
+                    actions = frame_to_actions(video_id, fid, actions_dict, result_dict)[:8]
+                    if len(actions) == 0:
+                        # print("0 actions", video_id, fid, newfdict[fid]['actions'])
+                        zero_actions.append([video_id, fid])
+                        # newfdict[fid]['actions'] = ["p000"]
+                        continue
                     newfdict[fid]['rel_labels'] = video_dict[video_id][fid]['rel_labels']
                     newfdict[fid]['rel_pairs'] = video_dict[video_id][fid]['rel_pairs']
                     newfdict[fid]['bbox_labels'] = video_dict[video_id][fid]['bbox_labels']
-                    newfdict[fid]['actions'] = finfo['actions']
+                    newfdict[fid]['actions'] = actions
                 else:
-                    print("Not found", fid, video_id)
+                    # print("Not found", fid, video_id)
                     missing_fid.append([video_id, fid])
 
             newdata.append([qid, newfdict])
@@ -104,7 +115,9 @@ for i, file in enumerate(all_files):
             json.dump(newdata, f)
 
 print(len(missing_fid))
+print(len(zero_actions))
 
 json.dump(missing_fid, open("/home/azon/data/star/new_graphs2/missing_fid.json", 'w'))
+json.dump(zero_actions, open("/home/azon/data/star/new_graphs2/zero_actions.json", 'w'))
 
 
