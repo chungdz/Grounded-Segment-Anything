@@ -2,7 +2,8 @@ import json
 from tqdm import trange, tqdm
 from collections import defaultdict
 import pandas as pd
-from action_detect.frame_to_actions import load_action_classes, load_prediction_result, frame_to_actions
+from frame_to_actions import load_action_classes, load_prediction_result, frame_to_actions
+import numpy as np
 
 label_path = "/home/azon/data/star/classes/"
 
@@ -75,18 +76,16 @@ all_files = ["Feasibility_test.json",
                 "Prediction_test.json",
                 "Sequence_test.json"
             ]
-output_path = "/home/azon/data/star/new_graphs2/"
-output_files = ["Interaction.json", "Feasibility.json", "Prediction.json", "Sequence.json"]
 
-actions_dict = load_action_classes('action_detect/action_classes.txt')
-result_dict = load_prediction_result('action_detect/masked_result.json')
+actions_dict = load_action_classes()
+result_dict = load_prediction_result()
 
-missing_fid = []
-zero_actions = []
+all_scores = []
+all_gt_scores = []
+all_gt_index = []
 for i, file in enumerate(all_files):
     with open(graph_path + file, 'r') as f:
         data = json.load(f)
-        newdata = []
         
         for q in tqdm(data):
             qid = q['question_id']
@@ -97,27 +96,30 @@ for i, file in enumerate(all_files):
                 if fid in video_dict[video_id]:
                     actions = frame_to_actions(video_id, fid, actions_dict, result_dict)[:8]
                     if len(actions) == 0:
-                        # print("0 actions", video_id, fid, newfdict[fid]['actions'])
-                        zero_actions.append([video_id, fid])
-                        # newfdict[fid]['actions'] = ["p000"]
                         continue
-                    newfdict[fid]['rel_labels'] = video_dict[video_id][fid]['rel_labels']
-                    newfdict[fid]['rel_pairs'] = video_dict[video_id][fid]['rel_pairs']
-                    newfdict[fid]['bbox_labels'] = video_dict[video_id][fid]['bbox_labels']
-                    newfdict[fid]['actions'] = [x[0] for x in actions]
-                else:
-                    # print("Not found", fid, video_id)
-                    missing_fid.append([video_id, fid])
+                    pred_actions = [x[0] for x in actions]
+                    pred_scores = [x[1] for x in actions]
+                    gt_actions = finfo['actions']
+                    all_scores.extend(pred_scores)
+                    gt_scores = []
+                    for action in gt_actions:
+                        try:
+                            aindex = pred_actions.index(action)
+                            all_gt_index.append(aindex)
+                            gt_scores.append(pred_scores[aindex])
+                        except:
+                            pass
+                    all_gt_scores.extend(gt_scores)
 
-            newdata.append([qid, newfdict])
+inters = np.arange(0, 105, 5)
+print(np.percentile(all_scores, inters))
+#[0.0012 0.1177 0.132  0.1433 0.1524 0.1608 0.1683 0.1756 0.1827 0.1904 0.1985 0.2074 0.2173 0.2291 0.2419 0.2577 0.2747 0.2982 0.328 0.3734 0.6446]
 
-        with open(output_path + output_files[i], 'w') as f:
-            json.dump(newdata, f)
+print(np.percentile(all_gt_scores, inters))
+# [0.0109 0.1374 0.1583 0.1737 0.1832 0.1946 0.206  0.2149 0.2248 0.234 0.245  0.2596 0.2742 0.2879 0.3055 0.3192 0.3342 0.3553 0.3819 0.4288 0.6446]
+print(np.mean(all_gt_scores))
 
-print(len(missing_fid))
-print(len(zero_actions))
-
-json.dump(missing_fid, open("/home/azon/data/star/new_graphs2/missing_fid.json", 'w'))
-json.dump(zero_actions, open("/home/azon/data/star/new_graphs2/zero_actions.json", 'w'))
+print(np.percentile(all_gt_index, inters))
+# [0. 0. 0. 0. 0. 0. 1. 1. 1. 2. 2. 2. 3. 3. 3. 4. 4. 5. 6. 7. 7.]
 
 

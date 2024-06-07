@@ -26,6 +26,6 @@ def frame_to_actions(video_id, frame_number, actions_dict, result_dict):
     sec = frame_to_time(int(frame_number.lstrip('0')))
     for prediction in result_dict[video_id]:
         if sec >= prediction["segment"][0] and sec <= prediction["segment"][1] and prediction["label"] in actions_dict:
-            result_actions.append(actions_dict[prediction["label"]])
+            result_actions.append((actions_dict[prediction["label"]], prediction["score"]))
     return result_actions
 
