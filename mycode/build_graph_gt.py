@@ -83,6 +83,7 @@ result_dict = load_prediction_result('action_detect/masked_result.json')
 
 missing_fid = []
 zero_actions = []
+threshold = 0
 for i, file in enumerate(all_files):
     with open(graph_path + file, 'r') as f:
         data = json.load(f)
@@ -104,7 +105,10 @@ for i, file in enumerate(all_files):
                     newfdict[fid]['rel_labels'] = video_dict[video_id][fid]['rel_labels']
                     newfdict[fid]['rel_pairs'] = video_dict[video_id][fid]['rel_pairs']
                     newfdict[fid]['bbox_labels'] = video_dict[video_id][fid]['bbox_labels']
-                    newfdict[fid]['actions'] = [x[0] for x in actions]
+                    newfdict[fid]['actions'] = []
+                    for action, score in actions:
+                        if score >= threshold:
+                            newfdict[fid]['actions'].append(action)
                 else:
                     # print("Not found", fid, video_id)
                     missing_fid.append([video_id, fid])
