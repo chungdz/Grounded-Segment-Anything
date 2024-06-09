@@ -141,3 +141,5 @@ python generate_llama_ibm_multi.py \
         --output_path='./outputs/llama_result/llama_2.txt' \
         --batch_size=400 \
         --env=/.env
+# build graph 
+python build_graph_gt.py

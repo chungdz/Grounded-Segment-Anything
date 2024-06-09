@@ -107,7 +107,7 @@ for i, file in enumerate(all_files):
                     newfdict[fid]['bbox_labels'] = video_dict[video_id][fid]['bbox_labels']
                     newfdict[fid]['actions'] = []
                     for action, score in actions:
-                        if score >= threshold:
+                        if score >= threshold or len(newfdict[fid]['actions']) == 0:
                             newfdict[fid]['actions'].append(action)
                 else:
                     # print("Not found", fid, video_id)
