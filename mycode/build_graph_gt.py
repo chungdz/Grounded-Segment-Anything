@@ -76,14 +76,14 @@ all_files = ["Feasibility_test.json",
                 "Sequence_test.json"
             ]
 output_path = "/home/azon/data/star/new_graphs2/"
-output_files = ["Interaction.json", "Feasibility.json", "Prediction.json", "Sequence.json"]
+output_files = ["Feasibility.json", "Interaction.json", "Prediction.json", "Sequence.json"]
 
 actions_dict = load_action_classes('action_detect/action_classes.txt')
 result_dict = load_prediction_result('action_detect/masked_result.json')
 
 missing_fid = []
 zero_actions = []
-threshold = 0
+threshold = 0.1
 for i, file in enumerate(all_files):
     with open(graph_path + file, 'r') as f:
         data = json.load(f)
