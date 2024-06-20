@@ -3,6 +3,12 @@ from tqdm import trange, tqdm
 from collections import defaultdict
 import pandas as pd
 from action_detect.frame_to_actions import load_action_classes, load_prediction_result, frame_to_actions
+from action_detect.same_class import clist
+
+asame = {}
+for aset in clist:
+    for a in aset:
+        asame[a] = aset
 
 label_path = "/home/azon/data/star/classes/"
 
@@ -83,7 +89,7 @@ result_dict = load_prediction_result('action_detect/masked_result.json')
 
 missing_fid = []
 zero_actions = []
-threshold = 0.1
+threshold = 0
 for i, file in enumerate(all_files):
     with open(graph_path + file, 'r') as f:
         data = json.load(f)
@@ -106,9 +112,12 @@ for i, file in enumerate(all_files):
                     newfdict[fid]['rel_pairs'] = video_dict[video_id][fid]['rel_pairs']
                     newfdict[fid]['bbox_labels'] = video_dict[video_id][fid]['bbox_labels']
                     newfdict[fid]['actions'] = []
+                    notadd = set()
                     for action, score in actions:
                         if score >= threshold or len(newfdict[fid]['actions']) == 0:
-                            newfdict[fid]['actions'].append(action)
+                            if action not in notadd:
+                                newfdict[fid]['actions'].append(action)
+                                # notadd.update(asame[action])
                 else:
                     # print("Not found", fid, video_id)
                     missing_fid.append([video_id, fid])
