@@ -113,7 +113,9 @@ CUDA_VISIBLE_DEVICES=3 python generate_llava.py --rank=15 tmux attach -t llavasu
 pip install sentencepiece protobuf transformers accelerate
 
 python merge_and_filter.py
-
+# 0.txt and 1.txt are generated. 
+# 10 and 11 are splited from 1.txt
+# 2 are missing IDs, missing IDs are generated from other build_graph_gt.py
 python generate_llama_ibm_multi.py \
         --frame_info_path='./outputs/llava_result/filtered/11.txt' \
         --output_path='./outputs/llama_result/llama_11.txt' \
@@ -133,7 +135,7 @@ python generate_llama_ibm_multi.py \
         --env=/.env
 
 python build_graph_gt.py
-# find missing part
+# find missing IDs in the second part
 python merge_and_filter.py
 
 python generate_llama_ibm_multi.py \
